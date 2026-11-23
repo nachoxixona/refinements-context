@@ -7,19 +7,22 @@ import com.refinements.visualizer.canvas.dto.ConnectionEdgeData;
 import com.refinements.visualizer.canvas.dto.EndpointDto;
 import com.refinements.visualizer.canvas.dto.MicroserviceNodeData;
 import com.refinements.visualizer.canvas.dto.SpecCardNodeData;
-import com.refinements.visualizer.card.SpecCard;
-import com.refinements.visualizer.card.SpecCardRepository;
+import com.refinements.visualizer.card.SpecCardApi;
+import com.refinements.visualizer.card.SpecCardView;
 import com.refinements.visualizer.card.model.ParsedEndpoint;
-import com.refinements.visualizer.connection.Connection;
+import com.refinements.visualizer.connection.ConnectionApi;
+import com.refinements.visualizer.connection.ConnectionDto;
 import com.refinements.visualizer.connection.ConnectionEndpoints;
-import com.refinements.visualizer.connection.ConnectionRepository;
-import com.refinements.visualizer.connection.FlowRepository;
-import com.refinements.visualizer.connection.dto.ConnectionDto;
-import com.refinements.visualizer.connection.dto.FlowDto;
-import com.refinements.visualizer.layout.BaselineLayout;
-import com.refinements.visualizer.layout.BaselineLayoutRepository;
-import com.refinements.visualizer.microservice.Microservice;
-import com.refinements.visualizer.microservice.MicroserviceRepository;
+import com.refinements.visualizer.connection.ConnectionKey;
+import com.refinements.visualizer.connection.ConnectionView;
+import com.refinements.visualizer.connection.FlowApi;
+import com.refinements.visualizer.connection.FlowDto;
+import com.refinements.visualizer.layout.LayoutApi;
+import com.refinements.visualizer.layout.LayoutKeys;
+import com.refinements.visualizer.layout.LayoutView;
+import com.refinements.visualizer.microservice.MicroserviceApi;
+import com.refinements.visualizer.microservice.MicroserviceView;
+import com.refinements.visualizer.note.NoteApi;
 import com.refinements.visualizer.shared.XYPosition;
 import com.refinements.visualizer.workspace.WorkspaceRevision;
 import java.util.ArrayList;
@@ -34,92 +37,94 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Builds {@code GET /api/canvas} (data-model.md §1–§5, research R8). */
+/**
+ * Builds {@code GET /api/canvas} (data-model.md §1–§5, research R8) from the other modules' public APIs, inside one
+ * read-only transaction so it reads a single consistent snapshot (specs/005 research R6).
+ */
 @Service
-public class CanvasService {
+public class CanvasService implements CanvasApi {
 
     /** Relative position of a docked card: just below its microservice node. */
     public static final XYPosition DOCK_OFFSET = new XYPosition(0.0, 84.0);
 
-    private final MicroserviceRepository microservices;
-    private final SpecCardRepository cards;
-    private final ConnectionRepository connections;
-    private final FlowRepository flows;
-    private final BaselineLayoutRepository layouts;
+    private final MicroserviceApi microservices;
+    private final SpecCardApi cards;
+    private final ConnectionApi connections;
+    private final FlowApi flows;
+    private final LayoutApi layouts;
     private final WorkspaceRevision revision;
-    private final com.refinements.visualizer.note.NoteService notes;
+    private final NoteApi notes;
 
     public CanvasService(
-            MicroserviceRepository microservices,
-            SpecCardRepository cards,
-            ConnectionRepository connections,
-            FlowRepository flows,
-            BaselineLayoutRepository layouts,
+            MicroserviceApi microservices,
+            SpecCardApi cards,
+            ConnectionApi connections,
+            FlowApi flows,
+            LayoutApi layouts,
             WorkspaceRevision revision,
-            com.refinements.visualizer.note.NoteService notes) {
-        this.notes = notes;
+            NoteApi notes) {
         this.microservices = microservices;
         this.cards = cards;
         this.connections = connections;
         this.flows = flows;
         this.layouts = layouts;
         this.revision = revision;
+        this.notes = notes;
     }
 
     @Transactional(readOnly = true)
     public CanvasResponse canvas() {
-        BaselineLayout layout = layouts.getSingleton();
-        Set<UUID> collapsed = new HashSet<>(layout.getCollapsedCards());
-        Map<UUID, SpecCard> cardsById = new LinkedHashMap<>();
-        List<SpecCard> allCards = new ArrayList<>(cards.findAll());
-        allCards.sort(Comparator.comparing(SpecCard::getCreatedAt).thenComparing(SpecCard::getId));
-        allCards.forEach(c -> cardsById.put(c.getId(), c));
+        LayoutView layout = layouts.current();
+        Set<UUID> collapsed = new HashSet<>(layout.collapsedCards());
+        Map<UUID, SpecCardView> cardsById = new LinkedHashMap<>();
+        cards.findAll().forEach(c -> cardsById.put(c.id(), c)); // oldest first (createdAt, id)
 
+        List<MicroserviceView> allMicroservices = microservices.findAllOrdered();
         List<CanvasNode> nodes = new ArrayList<>();
         Map<UUID, UUID> cardOwner = new HashMap<>();
-        for (Microservice m : microservices.findAllByOrderByNameNormalizedAsc()) {
-            SpecCard card = m.getSpecCardId() == null ? null : cardsById.get(m.getSpecCardId());
-            boolean cardCollapsed = card != null && collapsed.contains(card.getId());
+        for (MicroserviceView m : allMicroservices) {
+            SpecCardView card = m.specCardId() == null ? null : cardsById.get(m.specCardId());
+            boolean cardCollapsed = card != null && collapsed.contains(card.id());
             nodes.add(new CanvasNode(
-                    BaselineLayout.msKey(m.getId()),
+                    LayoutKeys.msKey(m.id()),
                     CanvasNode.MICROSERVICE,
                     null,
                     true,
                     false,
-                    layout.getPositions().get(BaselineLayout.msKey(m.getId())),
+                    layout.positions().get(LayoutKeys.msKey(m.id())),
                     new MicroserviceNodeData(
-                            m.getId(),
-                            m.getName(),
-                            m.getDescription(),
-                            m.getSpecCardId(),
-                            card == null ? null : card.getTitle(),
+                            m.id(),
+                            m.name(),
+                            m.description(),
+                            m.specCardId(),
+                            card == null ? null : card.title(),
                             cardCollapsed,
-                            m.getTeam(),
-                            m.getRepositoryUrl(),
-                            m.getDocsUrl())));
+                            m.team(),
+                            m.repositoryUrl(),
+                            m.docsUrl())));
             if (card != null) {
-                cardOwner.put(card.getId(), m.getId());
+                cardOwner.put(card.id(), m.id());
             }
         }
-        for (SpecCard c : cardsById.values()) {
-            UUID owner = cardOwner.get(c.getId());
+        for (SpecCardView c : cardsById.values()) {
+            UUID owner = cardOwner.get(c.id());
             if (owner == null) {
                 nodes.add(new CanvasNode(
-                        BaselineLayout.cardKey(c.getId()),
+                        LayoutKeys.cardKey(c.id()),
                         CanvasNode.SPEC_CARD,
                         null,
                         true,
                         false,
-                        layout.getPositions().get(BaselineLayout.cardKey(c.getId())),
+                        layout.positions().get(LayoutKeys.cardKey(c.id())),
                         cardData(c, null)));
             } else {
                 // a collapsed docked card is still sent, hidden: its endpoints stay available (FR-014, FR-054)
                 nodes.add(new CanvasNode(
-                        BaselineLayout.cardKey(c.getId()),
+                        LayoutKeys.cardKey(c.id()),
                         CanvasNode.SPEC_CARD,
-                        BaselineLayout.msKey(owner),
+                        LayoutKeys.msKey(owner),
                         false,
-                        collapsed.contains(c.getId()),
+                        collapsed.contains(c.id()),
                         DOCK_OFFSET,
                         cardData(c, owner)));
             }
@@ -127,79 +132,77 @@ public class CanvasService {
 
         // target microservice → match keys of its linked card's endpoints, for FR-055
         Map<UUID, Set<String>> targetEndpoints = new HashMap<>();
-        for (Microservice m : microservices.findAll()) {
-            SpecCard card = m.getSpecCardId() == null ? null : cardsById.get(m.getSpecCardId());
+        for (MicroserviceView m : allMicroservices) {
+            SpecCardView card = m.specCardId() == null ? null : cardsById.get(m.specCardId());
             if (card != null) {
                 Set<String> keys = new HashSet<>();
-                card.getEndpoints()
+                card.endpoints()
                         .forEach(e ->
                                 keys.add(ConnectionEndpoints.matchKey(e.method().name(), e.path())));
-                targetEndpoints.put(m.getId(), keys);
+                targetEndpoints.put(m.id(), keys);
             }
         }
         List<CanvasEdge> edges = new ArrayList<>();
         List<ConnectionDto> dangling = new ArrayList<>();
-        List<Connection> all = new ArrayList<>(connections.findAll());
-        all.sort(Comparator.comparing(Connection::getSourceNameNormalized)
-                .thenComparing(Connection::getTargetNameNormalized)
-                .thenComparing(Connection::getNameNormalized));
-        for (Connection f : all) {
-            if (f.isDangling()) {
-                dangling.add(ConnectionDto.from(f));
+        List<ConnectionView> all = new ArrayList<>(connections.findAll());
+        all.sort(Comparator.comparing((ConnectionView v) -> v.key().source())
+                .thenComparing(v -> v.key().target())
+                .thenComparing(v -> v.key().name()));
+        for (ConnectionView v : all) {
+            ConnectionDto f = v.connection();
+            if (f.dangling()) {
+                dangling.add(f);
             } else {
                 edges.add(new CanvasEdge(
-                        "connection:" + f.getId(),
-                        BaselineLayout.msKey(f.getSourceId()),
-                        BaselineLayout.msKey(f.getTargetId()),
+                        "connection:" + f.id(),
+                        LayoutKeys.msKey(f.sourceId()),
+                        LayoutKeys.msKey(f.targetId()),
                         CanvasEdge.TYPE,
                         new ConnectionEdgeData(
-                                f.getId(),
-                                f.getName(),
-                                f.getKind(),
-                                f.getDescription(),
-                                f.getFlowId(),
-                                f.getEndpoint(),
+                                f.id(),
+                                f.name(),
+                                f.kind(),
+                                f.description(),
+                                f.flowId(),
+                                f.endpoint(),
                                 endpointMissing(f, targetEndpoints),
-                                f.getStep())));
+                                f.step())));
             }
         }
-        List<FlowDto> flowDtos = flows.findAllByOrderByNameNormalizedAsc().stream()
-                .map(FlowDto::from)
-                .toList();
+        List<FlowDto> flowDtos = flows.findAllOrdered();
         return new CanvasResponse(
                 List.copyOf(nodes),
                 List.copyOf(edges),
                 List.copyOf(dangling),
-                flowDtos,
+                List.copyOf(flowDtos),
                 notes.list(),
                 revision.current(),
-                layout.getVersion());
+                layout.version());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public BaselineIndex index() {
         Map<UUID, String> ms = new HashMap<>();
         Map<UUID, UUID> linked = new HashMap<>();
-        for (Microservice m : microservices.findAll()) {
-            ms.put(m.getId(), m.getNameNormalized());
-            if (m.getSpecCardId() != null) {
-                linked.put(m.getId(), m.getSpecCardId());
+        for (MicroserviceView m : microservices.findAll()) {
+            ms.put(m.id(), m.nameNormalized());
+            if (m.specCardId() != null) {
+                linked.put(m.id(), m.specCardId());
             }
         }
         Map<UUID, String> hashes = new HashMap<>();
         Set<String> endpointKeys = new HashSet<>();
-        for (SpecCard c : cards.findAll()) {
-            hashes.put(c.getId(), c.getContentHash());
-            c.getEndpoints().forEach(e -> endpointKeys.add(e.endpointKey()));
+        for (SpecCardView c : cards.findAll()) {
+            hashes.put(c.id(), c.contentHash());
+            c.endpoints().forEach(e -> endpointKeys.add(e.endpointKey()));
         }
         Set<UUID> flowIds = new HashSet<>();
-        flows.findAll().forEach(g -> flowIds.add(g.getId()));
+        flows.findAllOrdered().forEach(g -> flowIds.add(g.id()));
         Map<UUID, BaselineIndex.ConnectionRef> connectionRefs = new HashMap<>();
-        for (Connection f : connections.findAll()) {
-            connectionRefs.put(
-                    f.getId(),
-                    new BaselineIndex.ConnectionRef(
-                            f.getSourceNameNormalized(), f.getTargetNameNormalized(), f.getNameNormalized()));
+        for (ConnectionView v : connections.findAll()) {
+            ConnectionKey k = v.key();
+            connectionRefs.put(v.connection().id(), new BaselineIndex.ConnectionRef(k.source(), k.target(), k.name()));
         }
         return new BaselineIndex(
                 Map.copyOf(ms),
@@ -211,29 +214,29 @@ public class CanvasService {
                 revision.current());
     }
 
-    private static boolean endpointMissing(Connection f, Map<UUID, Set<String>> targetEndpoints) {
-        if (f.getEndpoint() == null) {
+    private static boolean endpointMissing(ConnectionDto f, Map<UUID, Set<String>> targetEndpoints) {
+        if (f.endpoint() == null) {
             return false;
         }
-        Set<String> keys = targetEndpoints.get(f.getTargetId());
-        return keys != null && !keys.contains(ConnectionEndpoints.matchKey(f.getEndpoint()));
+        Set<String> keys = targetEndpoints.get(f.targetId());
+        return keys != null && !keys.contains(ConnectionEndpoints.matchKey(f.endpoint()));
     }
 
-    private static SpecCardNodeData cardData(SpecCard c, UUID owner) {
+    private static SpecCardNodeData cardData(SpecCardView c, UUID owner) {
         List<EndpointDto> endpoints = new ArrayList<>();
-        for (ParsedEndpoint e : c.getEndpoints()) {
+        for (ParsedEndpoint e : c.endpoints()) {
             endpoints.add(EndpointDto.from(e));
         }
         return new SpecCardNodeData(
-                c.getId(),
-                c.getTitle(),
-                c.getApiVersion(),
-                c.getSpecFormat(),
-                c.getSourceType(),
-                c.getSourceUrl(),
-                c.getContentHash(),
-                c.getLastSyncAt(),
-                c.getLastSyncStatus(),
+                c.id(),
+                c.title(),
+                c.apiVersion(),
+                c.specFormat(),
+                c.sourceType(),
+                c.sourceUrl(),
+                c.contentHash(),
+                c.lastSyncAt(),
+                c.lastSyncStatus(),
                 List.copyOf(endpoints),
                 owner);
     }

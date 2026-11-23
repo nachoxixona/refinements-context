@@ -1,6 +1,5 @@
 package com.refinements.visualizer;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.modulith.core.ApplicationModules;
 
@@ -13,7 +12,6 @@ class ModularityTest {
     static final ApplicationModules MODULES = ApplicationModules.of(VisualizerApplication.class);
 
     @Test
-    @Disabled("enabled in T030, once the cycles and cross-module repository reads are gone")
     void verifiesModularStructure() {
         MODULES.verify();
     }

@@ -1,12 +1,11 @@
 package com.refinements.visualizer.microservice;
 
-import com.refinements.visualizer.card.SpecCardRepository;
-import com.refinements.visualizer.connection.Connection;
-import com.refinements.visualizer.connection.ConnectionRepository;
+import com.refinements.visualizer.card.SpecCardApi;
 import com.refinements.visualizer.microservice.dto.MicroserviceDeleted;
 import com.refinements.visualizer.microservice.dto.MicroserviceDto;
 import com.refinements.visualizer.microservice.dto.MicroserviceMutation;
 import com.refinements.visualizer.microservice.dto.MicroservicePatch;
+import com.refinements.visualizer.microservice.spi.ConnectionEndsPort;
 import com.refinements.visualizer.shared.Names;
 import com.refinements.visualizer.shared.errors.BadRequestException;
 import com.refinements.visualizer.shared.errors.ConflictException;
@@ -14,11 +13,11 @@ import com.refinements.visualizer.shared.errors.NotFoundException;
 import com.refinements.visualizer.workspace.WorkspaceRevision;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -26,23 +25,23 @@ import org.springframework.transaction.annotation.Transactional;
  * leaves connections dangling (FR-016, FR-027); creating re-attaches dangling connections with the same name (research R2).
  */
 @Service
-public class MicroserviceService {
+public class MicroserviceService implements MicroserviceApi {
 
     private final MicroserviceRepository microservices;
-    private final SpecCardRepository cards;
-    private final ConnectionRepository connections;
+    private final SpecCardApi cards;
+    private final ConnectionEndsPort connectionEnds;
     private final WorkspaceRevision revision;
     private final Clock clock;
 
     public MicroserviceService(
             MicroserviceRepository microservices,
-            SpecCardRepository cards,
-            ConnectionRepository connections,
+            SpecCardApi cards,
+            ConnectionEndsPort connectionEnds,
             WorkspaceRevision revision,
             Clock clock) {
         this.microservices = microservices;
         this.cards = cards;
-        this.connections = connections;
+        this.connectionEnds = connectionEnds;
         this.revision = revision;
         this.clock = clock;
     }
@@ -66,7 +65,7 @@ public class MicroserviceService {
      * Creates a microservice without bumping the revision (callers do), for the connections document as well.
      * Validates Microservice.name and Microservice.description (data-model.md §2).
      */
-    public Microservice createInternal(String name, String description) {
+    Microservice createInternal(String name, String description) {
         String clean = checkName(name);
         checkDescription(description);
         if (microservices.findByNameNormalized(Names.norm(clean)).isPresent()) {
@@ -77,24 +76,13 @@ public class MicroserviceService {
     }
 
     /** Re-attaches dangling connection ends whose kept name equals this microservice's normalized name. */
-    public List<UUID> reattach(Microservice m) {
-        Instant now = clock.instant();
-        List<UUID> ids = new ArrayList<>();
-        for (Connection f : connections.findDanglingByName(m.getNameNormalized())) {
-            if (f.getSourceId() == null && f.getSourceNameNormalized().equals(m.getNameNormalized())) {
-                f.setSource(m.getId(), m.getName(), now);
-            }
-            if (f.getTargetId() == null && f.getTargetNameNormalized().equals(m.getNameNormalized())) {
-                f.setTarget(m.getId(), m.getName(), now);
-            }
-            ids.add(f.getId());
-        }
-        return ids;
+    List<UUID> reattach(Microservice m) {
+        return connectionEnds.reattach(m.getId(), m.getName(), m.getNameNormalized());
     }
 
     @Transactional
     public MicroserviceMutation update(UUID id, MicroservicePatch patch) {
-        Microservice m = find(id);
+        Microservice m = entity(id);
         Instant now = clock.instant();
         if (patch.name() != null) {
             String clean = checkName(patch.name());
@@ -103,14 +91,7 @@ public class MicroserviceService {
                 throw duplicateName(clean);
             }
             m.rename(clean, now);
-            for (Connection f : connections.findBySourceIdOrTargetId(id, id)) {
-                if (id.equals(f.getSourceId())) {
-                    f.setSource(id, m.getName(), now);
-                }
-                if (id.equals(f.getTargetId())) {
-                    f.setTarget(id, m.getName(), now);
-                }
-            }
+            connectionEnds.renamed(id, m.getName());
         }
         if (patch.descriptionPresent()) {
             checkDescription(patch.description());
@@ -131,7 +112,7 @@ public class MicroserviceService {
     }
 
     /** Sets ownership (validated) without bumping the revision. */
-    public void ownInternal(Microservice m, String team, String repositoryUrl, String docsUrl) {
+    void ownInternal(Microservice m, String team, String repositoryUrl, String docsUrl) {
         m.own(
                 Ownership.team(team),
                 Ownership.url(repositoryUrl, "repositoryUrl"),
@@ -141,27 +122,16 @@ public class MicroserviceService {
     }
 
     /** Describes an existing microservice without bumping the revision (connections document apply). */
-    public void describeInternal(Microservice m, String description) {
+    void describeInternal(Microservice m, String description) {
         checkDescription(description);
         m.describe(description, clock.instant());
     }
 
     @Transactional
     public MicroserviceDeleted delete(UUID id) {
-        Microservice m = find(id);
-        List<UUID> dangling = new ArrayList<>();
-        Instant now = clock.instant();
-        for (Connection f : connections.findBySourceIdOrTargetId(id, id)) {
-            // keep the names; null the ids explicitly so the in-memory entities match the FK SET NULL
-            if (id.equals(f.getSourceId())) {
-                f.setSource(null, f.getSourceName(), now);
-            }
-            if (id.equals(f.getTargetId())) {
-                f.setTarget(null, f.getTargetName(), now);
-            }
-            dangling.add(f.getId());
-        }
-        connections.flush();
+        Microservice m = entity(id);
+        // keeps the names and nulls the ids (matching the FK SET NULL), flushed before the row goes
+        List<UUID> dangling = connectionEnds.detach(id);
         microservices.delete(m);
         return new MicroserviceDeleted(dangling, revision.bump());
     }
@@ -169,8 +139,8 @@ public class MicroserviceService {
     /** Links a card (FR-012, FR-013). The card must be unlinked; the microservice's card is replaced only on request. */
     @Transactional
     public void link(UUID id, UUID cardId, boolean replace) {
-        Microservice m = find(id);
-        if (!cards.existsById(cardId)) {
+        Microservice m = entity(id);
+        if (!cards.exists(cardId)) {
             throw new NotFoundException("No spec card " + cardId + ".");
         }
         if (cardId.equals(m.getSpecCardId())) {
@@ -192,13 +162,65 @@ public class MicroserviceService {
 
     @Transactional
     public void unlink(UUID id) {
-        Microservice m = find(id);
+        Microservice m = entity(id);
         m.link(null, clock.instant());
         microservices.saveAndFlush(m);
     }
 
-    public Microservice find(UUID id) {
+    Microservice entity(UUID id) {
         return microservices.findById(id).orElseThrow(() -> new NotFoundException("No microservice " + id + "."));
+    }
+
+    // --- MicroserviceApi -------------------------------------------------------------------------------------
+
+    @Override
+    @Transactional(readOnly = true)
+    public MicroserviceView find(UUID id) {
+        return MicroserviceView.from(entity(id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MicroserviceView> findAll() {
+        return microservices.findAll().stream().map(MicroserviceView::from).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MicroserviceView> findAllOrdered() {
+        return microservices.findAllByOrderByNameNormalizedAsc().stream()
+                .map(MicroserviceView::from)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<MicroserviceView> findByNameNormalized(String nameNormalized) {
+        return microservices.findByNameNormalized(nameNormalized).map(MicroserviceView::from);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public MicroserviceView createWithoutRevision(String name, String description) {
+        return MicroserviceView.from(createInternal(name, description));
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void describeWithoutRevision(UUID id, String description) {
+        describeInternal(entity(id), description);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void ownWithoutRevision(UUID id, String team, String repositoryUrl, String docsUrl) {
+        ownInternal(entity(id), team, repositoryUrl, docsUrl);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public List<UUID> reattach(UUID id) {
+        return reattach(entity(id));
     }
 
     private static String checkName(String name) {

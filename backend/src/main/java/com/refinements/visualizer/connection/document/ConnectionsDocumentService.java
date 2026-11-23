@@ -6,9 +6,8 @@ import com.refinements.visualizer.connection.FlowRepository;
 import com.refinements.visualizer.connection.FlowService;
 import com.refinements.visualizer.connection.document.ConnectionsDocumentModel.ConnectionEntry;
 import com.refinements.visualizer.connection.document.ConnectionsDocumentModel.MicroserviceEntry;
-import com.refinements.visualizer.microservice.Microservice;
-import com.refinements.visualizer.microservice.MicroserviceRepository;
-import com.refinements.visualizer.microservice.MicroserviceService;
+import com.refinements.visualizer.microservice.MicroserviceApi;
+import com.refinements.visualizer.microservice.MicroserviceView;
 import com.refinements.visualizer.shared.Names;
 import com.refinements.visualizer.shared.VisualizerProperties;
 import com.refinements.visualizer.shared.errors.PayloadTooLargeException;
@@ -29,8 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ConnectionsDocumentService {
 
-    private final MicroserviceRepository microservices;
-    private final MicroserviceService microserviceService;
+    private final MicroserviceApi microservices;
     private final ConnectionRepository connections;
     private final FlowRepository flows;
     private final FlowService flowService;
@@ -41,8 +39,7 @@ public class ConnectionsDocumentService {
     private final long maxBytes;
 
     public ConnectionsDocumentService(
-            MicroserviceRepository microservices,
-            MicroserviceService microserviceService,
+            MicroserviceApi microservices,
             ConnectionRepository connections,
             FlowRepository flows,
             FlowService flowService,
@@ -52,7 +49,6 @@ public class ConnectionsDocumentService {
             Clock clock,
             VisualizerProperties props) {
         this.microservices = microservices;
-        this.microserviceService = microserviceService;
         this.connections = connections;
         this.flows = flows;
         this.flowService = flowService;
@@ -103,21 +99,21 @@ public class ConnectionsDocumentService {
 
         for (String name : plan.microservicesToCreate()) {
             MicroserviceEntry entry = plan.createEntries().get(Names.norm(name));
-            Microservice m = microserviceService.createInternal(name, entry == null ? null : entry.description());
+            MicroserviceView m = microservices.createWithoutRevision(name, entry == null ? null : entry.description());
             if (entry != null) {
-                microserviceService.ownInternal(m, entry.team(), entry.repository(), entry.docs());
+                microservices.ownWithoutRevision(m.id(), entry.team(), entry.repository(), entry.docs());
             }
-            microserviceService.reattach(m);
+            microservices.reattach(m.id());
         }
         for (ConnectionsDocumentDiff.Describe d : plan.describe()) {
-            microserviceService.describeInternal(d.microservice(), d.description());
-            microserviceService.ownInternal(d.microservice(), d.team(), d.repository(), d.docs());
+            microservices.describeWithoutRevision(d.microservice().id(), d.description());
+            microservices.ownWithoutRevision(d.microservice().id(), d.team(), d.repository(), d.docs());
         }
         connections.deleteAll(plan.connectionsToRemove());
         connections.flush();
 
-        Map<String, Microservice> byName = new HashMap<>();
-        microservices.findAll().forEach(m -> byName.put(m.getNameNormalized(), m));
+        Map<String, MicroserviceView> byName = new HashMap<>();
+        microservices.findAll().forEach(m -> byName.put(m.nameNormalized(), m));
         List<Connection> needStep = new ArrayList<>();
         for (ConnectionsDocumentDiff.ConnectionUpdate u : plan.connectionsToUpdate()) {
             Connection f = u.connection();
@@ -136,11 +132,11 @@ public class ConnectionsDocumentService {
             }
         }
         for (ConnectionEntry e : plan.connectionsToAdd()) {
-            Microservice source = byName.get(Names.norm(e.source()));
-            Microservice target = byName.get(Names.norm(e.target()));
+            MicroserviceView source = byName.get(Names.norm(e.source()));
+            MicroserviceView target = byName.get(Names.norm(e.target()));
             Connection f = new Connection(e.name(), e.kind(), e.description(), now);
-            f.setSource(source.getId(), source.getName(), now);
-            f.setTarget(target.getId(), target.getName(), now);
+            f.setSource(source.id(), source.name(), now);
+            f.setTarget(target.id(), target.name(), now);
             f.setFlow(flowOf(flowIds, e), now);
             f.setEndpoint(e.endpoint(), now);
             f.setStep(f.getFlowId() == null ? null : e.step(), now);

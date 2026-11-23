@@ -8,8 +8,7 @@ import com.refinements.visualizer.card.dto.ImportCardRequest;
 import com.refinements.visualizer.card.dto.SpecCardSummary;
 import com.refinements.visualizer.card.model.ParsedEndpoint;
 import com.refinements.visualizer.card.model.SpecKeys;
-import com.refinements.visualizer.microservice.Microservice;
-import com.refinements.visualizer.microservice.MicroserviceRepository;
+import com.refinements.visualizer.card.spi.CardLinkPort;
 import com.refinements.visualizer.shared.VisualizerProperties;
 import com.refinements.visualizer.shared.errors.BadRequestException;
 import com.refinements.visualizer.shared.errors.ConflictException;
@@ -21,10 +20,11 @@ import com.refinements.visualizer.shared.errors.SpecInvalidException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,10 +35,10 @@ import org.springframework.transaction.annotation.Transactional;
  * returns the error, so sync is not wrapped in one transaction.
  */
 @Service
-public class SpecCardService {
+public class SpecCardService implements SpecCardApi {
 
     private final SpecCardRepository cards;
-    private final MicroserviceRepository microservices;
+    private final CardLinkPort links;
     private final SpecFetcher fetcher;
     private final SpecParser parser;
     private final FieldFlattener flattener;
@@ -47,14 +47,14 @@ public class SpecCardService {
 
     public SpecCardService(
             SpecCardRepository cards,
-            MicroserviceRepository microservices,
+            CardLinkPort links,
             SpecFetcher fetcher,
             SpecParser parser,
             FieldFlattener flattener,
             Clock clock,
             VisualizerProperties props) {
         this.cards = cards;
-        this.microservices = microservices;
+        this.links = links;
         this.fetcher = fetcher;
         this.parser = parser;
         this.flattener = flattener;
@@ -63,14 +63,9 @@ public class SpecCardService {
     }
 
     public List<SpecCardSummary> list() {
-        Map<UUID, UUID> links = new HashMap<>();
-        for (Microservice m : microservices.findAll()) {
-            if (m.getSpecCardId() != null) {
-                links.put(m.getSpecCardId(), m.getId());
-            }
-        }
+        Map<UUID, UUID> linked = links.linksByCard();
         return cards.findAllByOrderByCreatedAtDesc().stream()
-                .map(c -> SpecCardSummary.from(c, false, links.get(c.getId())))
+                .map(c -> SpecCardSummary.from(c, false, linked.get(c.getId())))
                 .toList();
     }
 
@@ -130,9 +125,29 @@ public class SpecCardService {
     @Transactional
     public void delete(UUID cardId) {
         SpecCard card = find(cardId);
-        microservices.findBySpecCardId(cardId).ifPresent(m -> m.link(null, clock.instant()));
-        microservices.flush();
+        links.unlinkCard(cardId);
         cards.delete(card);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean exists(UUID cardId) {
+        return cards.existsById(cardId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SpecCardView> findAll() {
+        return cards.findAll().stream()
+                .sorted(Comparator.comparing(SpecCard::getCreatedAt).thenComparing(SpecCard::getId))
+                .map(SpecCardView::from)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<UUID> allIds() {
+        return Set.copyOf(cards.findAllIds());
     }
 
     private SpecCard find(UUID cardId) {
@@ -140,7 +155,7 @@ public class SpecCardService {
     }
 
     private UUID linkedMicroservice(UUID cardId) {
-        return microservices.findBySpecCardId(cardId).map(Microservice::getId).orElse(null);
+        return links.linkedMicroservice(cardId).orElse(null);
     }
 
     private void apply(SpecCard card, ParsedSpec parsed, String content, String hash) {

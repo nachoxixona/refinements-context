@@ -1,7 +1,5 @@
-package com.refinements.visualizer.connection.dto;
+package com.refinements.visualizer.connection;
 
-import com.refinements.visualizer.connection.Flow;
-import com.refinements.visualizer.connection.FlowColor;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 

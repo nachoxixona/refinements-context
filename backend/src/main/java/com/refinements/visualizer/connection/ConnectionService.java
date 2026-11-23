@@ -1,12 +1,11 @@
 package com.refinements.visualizer.connection;
 
 import com.refinements.visualizer.connection.dto.ConnectionCreate;
-import com.refinements.visualizer.connection.dto.ConnectionDto;
 import com.refinements.visualizer.connection.dto.ConnectionMutation;
 import com.refinements.visualizer.connection.dto.ConnectionPatch;
 import com.refinements.visualizer.connection.dto.ReassignRequest;
-import com.refinements.visualizer.microservice.Microservice;
-import com.refinements.visualizer.microservice.MicroserviceRepository;
+import com.refinements.visualizer.microservice.MicroserviceApi;
+import com.refinements.visualizer.microservice.MicroserviceView;
 import com.refinements.visualizer.shared.Names;
 import com.refinements.visualizer.shared.errors.BadRequestException;
 import com.refinements.visualizer.shared.errors.ConflictException;
@@ -14,6 +13,7 @@ import com.refinements.visualizer.shared.errors.NotFoundException;
 import com.refinements.visualizer.workspace.WorkspaceRevision;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -25,18 +25,18 @@ import org.springframework.transaction.annotation.Transactional;
  * workspace revision.
  */
 @Service
-public class ConnectionService {
+public class ConnectionService implements ConnectionApi {
 
     private final ConnectionRepository connections;
     private final FlowRepository flows;
-    private final MicroserviceRepository microservices;
+    private final MicroserviceApi microservices;
     private final WorkspaceRevision revision;
     private final Clock clock;
 
     public ConnectionService(
             ConnectionRepository connections,
             FlowRepository flows,
-            MicroserviceRepository microservices,
+            MicroserviceApi microservices,
             WorkspaceRevision revision,
             Clock clock) {
         this.connections = connections;
@@ -48,19 +48,19 @@ public class ConnectionService {
 
     @Transactional
     public ConnectionMutation create(ConnectionCreate request) {
-        Microservice source = microservice(request.sourceId());
-        Microservice target = microservice(request.targetId());
+        MicroserviceView source = microservice(request.sourceId());
+        MicroserviceView target = microservice(request.targetId());
         String name = checkName(request.name());
         checkDescription(request.description());
-        if (source.getId().equals(target.getId())) {
+        if (source.id().equals(target.id())) {
             throw selfConnection();
         }
-        ConnectionKey key = ConnectionKey.of(source.getName(), target.getName(), name);
+        ConnectionKey key = ConnectionKey.of(source.name(), target.name(), name);
         checkUnique(key, null);
         Instant now = clock.instant();
         Connection f = new Connection(name, request.kind(), request.description(), now);
-        f.setSource(source.getId(), source.getName(), now);
-        f.setTarget(target.getId(), target.getName(), now);
+        f.setSource(source.id(), source.name(), now);
+        f.setTarget(target.id(), target.name(), now);
         f.setFlow(checkFlow(request.flowId()), now);
         f.setStep(stepFor(f, ConnectionSteps.check(request.step())), now);
         f.setEndpoint(checkEndpoint(request.endpoint()), now);
@@ -130,20 +130,20 @@ public class ConnectionService {
             throw new BadRequestException("Give sourceId, targetId or both.");
         }
         Connection f = find(id);
-        Microservice source = request.sourceId() == null ? null : microservice(request.sourceId());
-        Microservice target = request.targetId() == null ? null : microservice(request.targetId());
-        String sourceName = source == null ? f.getSourceName() : source.getName();
-        String targetName = target == null ? f.getTargetName() : target.getName();
+        MicroserviceView source = request.sourceId() == null ? null : microservice(request.sourceId());
+        MicroserviceView target = request.targetId() == null ? null : microservice(request.targetId());
+        String sourceName = source == null ? f.getSourceName() : source.name();
+        String targetName = target == null ? f.getTargetName() : target.name();
         if (Names.norm(sourceName).equals(Names.norm(targetName))) {
             throw selfConnection();
         }
         checkUnique(ConnectionKey.of(sourceName, targetName, f.getName()), id);
         Instant now = clock.instant();
         if (source != null) {
-            f.setSource(source.getId(), source.getName(), now);
+            f.setSource(source.id(), source.name(), now);
         }
         if (target != null) {
-            f.setTarget(target.getId(), target.getName(), now);
+            f.setTarget(target.id(), target.name(), now);
         }
         connections.saveAndFlush(f);
         return new ConnectionMutation(ConnectionDto.from(f), revision.bump());
@@ -163,8 +163,8 @@ public class ConnectionService {
         return connections.findById(id).orElseThrow(() -> new NotFoundException("No connection " + id + "."));
     }
 
-    private Microservice microservice(UUID id) {
-        return microservices.findById(id).orElseThrow(() -> new NotFoundException("No microservice " + id + "."));
+    private MicroserviceView microservice(UUID id) {
+        return microservices.find(id);
     }
 
     /** Blank → null; otherwise the normalized {@code METHOD /path} (data-model.md §3c), or 400. */
@@ -199,5 +199,11 @@ public class ConnectionService {
     private static ConflictException selfConnection() {
         return new ConflictException(
                 "A connection must go to a different microservice.", ConflictException.SELF_CONNECTION);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ConnectionView> findAll() {
+        return connections.findAll().stream().map(ConnectionView::from).toList();
     }
 }

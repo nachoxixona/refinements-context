@@ -71,48 +71,48 @@ These steps move packages only; behaviour does not change.
 
 ### card ↔ microservice (R5)
 
-- [ ] T012 [US1] Create the read side of card's public API:
+- [X] T012 [US1] Create the read side of card's public API:
   - `B/card/SpecCardView.java`: a record with the fields listed in contracts/module-apis.md §card.
   - `B/card/SpecCardApi.java`: an interface with `exists`, `findAll` (ordered like today's canvas: createdAt, then id) and `allIds`.
   - The implementation: `SpecCardService`, or a dedicated `SpecCardQueries` `@Service` in `B/card/`.
 
   Move `SourceType` and `SyncStatus` to the `card` root if they are not already there.
-- [ ] T013 [US1] Create `B/card/spi/CardLinkPort.java` (`linkedMicroservice`, `linksByCard`, `unlinkCard`) and `B/card/spi/package-info.java` with `@NamedInterface("spi")`. Change `B/card/SpecCardService.java` to use `CardLinkPort` instead of `MicroserviceRepository`/`Microservice`:
+- [X] T013 [US1] Create `B/card/spi/CardLinkPort.java` (`linkedMicroservice`, `linksByCard`, `unlinkCard`) and `B/card/spi/package-info.java` with `@NamedInterface("spi")`. Change `B/card/SpecCardService.java` to use `CardLinkPort` instead of `MicroserviceRepository`/`Microservice`:
   - `list()` uses `linksByCard`
   - `sync()` uses `linkedMicroservice`
   - `delete()` calls `unlinkCard`, which must flush, and only then deletes the card (data-model.md "Behaviours whose ordering must be preserved": Delete card)
-- [ ] T014 [US1] Implement the port in `B/microservice/CardLinkAdapter.java`. It is a `@Component` that implements `card.spi.CardLinkPort` with `MicroserviceRepository`. `unlinkCard` does `findBySpecCardId → link(null, now) → flush`. It moves to `adapter/out/card/` in T041.
-- [ ] T015 [US1] In `B/microservice/MicroserviceService.java`, replace `SpecCardRepository.existsById` with `SpecCardApi.exists`.
+- [X] T014 [US1] Implement the port in `B/microservice/adapter/out/card/CardLinkAdapter.java` (placed there directly, so it never moves). It is a `@Component` that implements `card.spi.CardLinkPort` with `MicroserviceRepository`. `unlinkCard` does `findBySpecCardId → link(null, now) → flush`.
+- [X] T015 [US1] In `B/microservice/MicroserviceService.java`, replace `SpecCardRepository.existsById` with `SpecCardApi.exists`.
 
 ### microservice ↔ connection (R4)
 
-- [ ] T016 [US1] Create the read side of microservice's public API:
+- [X] T016 [US1] Create the read side of microservice's public API:
   - `B/microservice/MicroserviceView.java`: a record with the fields from data-model.md microservice, plus a static `from(Microservice)`.
   - `B/microservice/MicroserviceApi.java` (contracts/module-apis.md §microservice): `find`, `findAll`, `findAllOrdered` (by nameNormalized), `findByNameNormalized`, `createWithoutRevision`, `describeWithoutRevision`, `ownWithoutRevision`, `reattach`.
 
   `MicroserviceService` implements the interface. The `*WithoutRevision` methods replace `createInternal`, `describeInternal` and `ownInternal`, and take ids, not entities.
-- [ ] T017 [US1] Create `B/microservice/spi/ConnectionEndsPort.java` (`detach`, `renamed`, `reattach`) and `B/microservice/spi/package-info.java` with `@NamedInterface("spi")`. Change `MicroserviceService` so it no longer uses `ConnectionRepository`/`Connection`:
+- [X] T017 [US1] Create `B/microservice/spi/ConnectionEndsPort.java` (`detach`, `renamed`, `reattach`) and `B/microservice/spi/package-info.java` with `@NamedInterface("spi")`. Change `MicroserviceService` so it no longer uses `ConnectionRepository`/`Connection`:
   - `update`: the rename loop becomes `renamed`
   - `reattach`: becomes `ConnectionEndsPort.reattach`
   - `delete`: becomes `detach`, then delete, then bump
 
   Keep the order from data-model.md "Behaviours whose ordering must be preserved", including `saveAndFlush` before reattach. Response ids must stay identical (`MicroserviceMutation.reattachedConnectionIds`, `MicroserviceDeleted.danglingConnectionIds`).
-- [ ] T018 [US1] Implement the port in `B/connection/ConnectionEndsAdapter.java`. It is a `@Component` that implements `microservice.spi.ConnectionEndsPort` by moving today's loops from `MicroserviceService`. `detach` must call `connections.flush()` before returning. It moves to `adapter/out/microservice/` in T049.
-- [ ] T019 [US1] Make `B/connection/ConnectionService.java` and `B/connection/document/ConnectionsDocumentService.java` use `MicroserviceApi`/`MicroserviceView` instead of `MicroserviceRepository`, `MicroserviceService` and the `Microservice` entity. Then do the same in `ConnectionsDocumentDiff`, `ConnectionsDocumentWriter` and `ConnectionsDocumentModel`, which work on `MicroserviceView` (data-model.md connection). Document apply stays in one transaction: `check(baseRevision)` → microservice operations → connections → bump.
-- [ ] T020 [US1] Move the connection API surface to the `B/connection/` root: `ConnectionDto` and `FlowDto` (simple names unchanged, R11), `ConnectionKind`, `FlowColor`, `ConnectionKey` and `ConnectionEndpoints`. Create `ConnectionApi.findAll()` and `FlowApi.findAll()`, implemented by `ConnectionService`/`FlowService`, returning DTOs (contracts/module-apis.md §connection).
+- [X] T018 [US1] Implement the port in `B/connection/adapter/out/microservice/ConnectionEndsAdapter.java` (placed there directly). It is a `@Component` that implements `microservice.spi.ConnectionEndsPort` by moving today's loops from `MicroserviceService`. `detach` must call `connections.flush()` before returning.
+- [X] T019 [US1] Make `B/connection/ConnectionService.java` and `B/connection/document/ConnectionsDocumentService.java` use `MicroserviceApi`/`MicroserviceView` instead of `MicroserviceRepository`, `MicroserviceService` and the `Microservice` entity. Then do the same in `ConnectionsDocumentDiff`, `ConnectionsDocumentWriter` and `ConnectionsDocumentModel`, which work on `MicroserviceView` (data-model.md connection). Document apply stays in one transaction: `check(baseRevision)` → microservice operations → connections → bump.
+- [X] T020 [US1] Move the connection API surface to the `B/connection/` root: `ConnectionDto` and `FlowDto` (simple names unchanged, R11), `ConnectionKind`, `FlowColor`, `ConnectionKey` and `ConnectionEndpoints`. Create `ConnectionApi.findAll()` and `FlowApi.findAll()`, implemented by `ConnectionService`/`FlowService`, returning DTOs (contracts/module-apis.md §connection).
 
 ### canvas, layout, note, scenario through APIs (R6)
 
-- [ ] T021 [P] [US1] Create `B/note/NoteApi.java` (`list()`), implemented by `NoteService`. `NoteDto` and `NoteKind` stay at the `note` root.
-- [ ] T022 [US1] Create `B/layout/LayoutApi.java` (`current()` → `B/layout/LayoutView.java` record: positions, collapsedCards, version) and `B/layout/LayoutKeys.java` (`msKey`, `cardKey`, moved from `BaselineLayout`).
-- [ ] T023 [US1] Move the save logic from `B/layout/LayoutController.java` into `B/layout/LayoutService.java`, which implements `LayoutApi` and has `save(LayoutUpdate)`. It reads microservice ids and links through `MicroserviceApi.findAll()` and card ids through `SpecCardApi.allIds()`. The pruning, collapse filter and stale-version error stay exactly as today. The controller only delegates.
-- [ ] T024 [US1] Rewrite `B/canvas/CanvasService.java` so it uses only `SpecCardApi`, `MicroserviceApi`, `ConnectionApi`, `FlowApi`, `LayoutApi`, `NoteApi` and `WorkspaceRevision`. Keep it in one `@Transactional(readOnly = true)` and keep the node, edge and dangling ordering and the `endpointMissing` logic identical. `index()` builds `BaselineIndex` from the same APIs.
-- [ ] T025 [US1] Create `B/canvas/CanvasApi.java` (`index()`), implemented by `CanvasService`. Make `B/scenario/ScenarioService.java` depend on `CanvasApi` instead of `CanvasService`. `BaselineIndex` stays at the `canvas` root.
-- [ ] T026 [US1] Fix the imports in scenario (`ScenarioValidator` and the model records) so they use only the published types: `connection` root, `card.model`, `note` root and `canvas` root.
+- [X] T021 [P] [US1] Create `B/note/NoteApi.java` (`list()`), implemented by `NoteService`. `NoteDto` and `NoteKind` stay at the `note` root.
+- [X] T022 [US1] Create `B/layout/LayoutApi.java` (`current()` → `B/layout/LayoutView.java` record: positions, collapsedCards, version) and `B/layout/LayoutKeys.java` (`msKey`, `cardKey`, moved from `BaselineLayout`).
+- [X] T023 [US1] Move the save logic from `B/layout/LayoutController.java` into `B/layout/LayoutService.java`, which implements `LayoutApi` and has `save(LayoutUpdate)`. It reads microservice ids and links through `MicroserviceApi.findAll()` and card ids through `SpecCardApi.allIds()`. The pruning, collapse filter and stale-version error stay exactly as today. The controller only delegates.
+- [X] T024 [US1] Rewrite `B/canvas/CanvasService.java` so it uses only `SpecCardApi`, `MicroserviceApi`, `ConnectionApi`, `FlowApi`, `LayoutApi`, `NoteApi` and `WorkspaceRevision`. Keep it in one `@Transactional(readOnly = true)` and keep the node, edge and dangling ordering and the `endpointMissing` logic identical. `index()` builds `BaselineIndex` from the same APIs.
+- [X] T025 [US1] Create `B/canvas/CanvasApi.java` (`index()`), implemented by `CanvasService`. Make `B/scenario/ScenarioService.java` depend on `CanvasApi` instead of `CanvasService`. `BaselineIndex` stays at the `canvas` root.
+- [X] T026 [US1] Fix the imports in scenario (`ScenarioValidator` and the model records) so they use only the published types: `connection` root, `card.model`, `note` root and `canvas` root.
 
 ### Enforce
 
-- [ ] T027 [P] [US1] Add a `package-info.java` with `@ApplicationModule(displayName = …, allowedDependencies = {…})` to each module (contracts/module-apis.md "Allowed dependencies", with named interfaces written as `"card :: model"`, `"card :: spi"`, `"microservice :: spi"`):
+- [X] T027 [P] [US1] Add a `package-info.java` with `@ApplicationModule(displayName = …, allowedDependencies = {…})` to each module (contracts/module-apis.md "Allowed dependencies", with named interfaces written as `"card :: model"`, `"card :: spi"`, `"microservice :: spi"`):
   - `B/workspace/package-info.java`
   - `B/note/package-info.java`
   - `B/card/package-info.java`
@@ -121,11 +121,11 @@ These steps move packages only; behaviour does not change.
   - `B/layout/package-info.java`
   - `B/canvas/package-info.java`
   - `B/scenario/package-info.java`
-- [ ] T028 [US1] Update the test imports and setup that refer to moved or now-internal types, without touching assertions. Tests are outside module verification, so `it/` may keep using repositories. These tests refer to them: `T/it/*IT.java`, `T/canvas/CanvasServiceTest.java`, `T/connection/document/*Test.java`.
-- [ ] T029 [US1] Run `./mvnw test -Dtest=ModularityTest#logsViolations`. Fix any remaining violations in main code until the list is empty.
-- [ ] T030 [US1] Remove the `@Disabled` from `verifiesModularStructure()` in `T/ModularityTest.java`, then run `./mvnw verify`. Everything must be green, including `ContractConformanceIT`.
-- [ ] T031 [US1] Check that the boundary check catches violations (quickstart §3). Temporarily inject `MicroserviceRepository` into `CanvasService`, confirm `ModularityTest` fails, then revert. Record the result in "Baseline violations" below.
-- [ ] T032 🔖 [US1] Commit "005: break module cycles, enforce Modulith boundaries".
+- [X] T028 [US1] Update the test imports and setup that refer to moved or now-internal types, without touching assertions. Tests are outside module verification, so `it/` may keep using repositories. These tests refer to them: `T/it/*IT.java`, `T/canvas/CanvasServiceTest.java`, `T/connection/document/*Test.java`.
+- [X] T029 [US1] Run `./mvnw test -Dtest=ModularityTest#logsViolations`. Fix any remaining violations in main code until the list is empty.
+- [X] T030 [US1] Remove the `@Disabled` from `verifiesModularStructure()` in `T/ModularityTest.java`, then run `./mvnw verify`. Everything must be green, including `ContractConformanceIT`.
+- [X] T031 [US1] Check that the boundary check catches violations (quickstart §3). Repositories still sit in module root packages until US2, so they count as exposed; use (a) an internal type of another module (`card.adapter.out.fetch.SpecFetcher` in `CanvasService`) and (b) an undeclared dependency (`layout.LayoutApi` in `ScenarioService`). Confirm `ModularityTest` fails for each, then revert. Record the result in "Baseline violations" below.
+- [X] T032 🔖 [US1] Commit "005: break module cycles, enforce Modulith boundaries".
 
 **Checkpoint**: The MVP is done. The backend has 9 enforced, acyclic modules and unchanged behaviour.
 
@@ -309,4 +309,9 @@ _Filled by T006 (before) and T031 (after, including the deliberate-violation che
   - Not reported because the repositories live in root packages (so they count as exposed): canvas and
     layout reading other modules' repositories. These are removed by T021–T024 and then blocked by the
     hexagonal moves (repositories become internal adapters).
-- After:
+- After (T030–T031): **0 violations**; `verify()` enabled and green. Detected dependencies match contracts/module-apis.md
+  (for example canvas → card, connection, layout, microservice, note, workspace, shared).
+  Deliberate checks: canvas → `card.adapter.out.fetch.SpecFetcher` fails with "depends on non-exposed type";
+  scenario → `layout.LayoutApi` fails with "Allowed targets: shared, canvas, card :: model, connection, note".
+- Note: repositories and entities are still in module root packages, so they count as public API until US2 moves
+  them under `adapter/out/persistence` and `domain`. No module uses another module's repository any more.

@@ -3,7 +3,7 @@ package com.refinements.visualizer.scenario;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.refinements.visualizer.canvas.BaselineIndex;
-import com.refinements.visualizer.canvas.CanvasService;
+import com.refinements.visualizer.canvas.CanvasApi;
 import com.refinements.visualizer.scenario.dto.ScenarioDocument;
 import com.refinements.visualizer.scenario.dto.ScenarioDto;
 import com.refinements.visualizer.scenario.dto.ScenarioSummary;
@@ -33,7 +33,7 @@ public class ScenarioService {
 
     private final SavedScenarioRepository repository;
     private final ScenarioValidator validator;
-    private final CanvasService canvas;
+    private final CanvasApi canvas;
     private final ObjectMapper mapper;
     private final Validator beanValidator;
     private final Clock clock;
@@ -41,7 +41,7 @@ public class ScenarioService {
     public ScenarioService(
             SavedScenarioRepository repository,
             ScenarioValidator validator,
-            CanvasService canvas,
+            CanvasApi canvas,
             ObjectMapper mapper,
             Validator beanValidator,
             Clock clock) {

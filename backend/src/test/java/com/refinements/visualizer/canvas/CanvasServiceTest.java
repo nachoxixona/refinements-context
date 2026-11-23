@@ -8,17 +8,23 @@ import com.refinements.visualizer.canvas.dto.CanvasNode;
 import com.refinements.visualizer.canvas.dto.CanvasResponse;
 import com.refinements.visualizer.card.SourceType;
 import com.refinements.visualizer.card.SpecCard;
-import com.refinements.visualizer.card.SpecCardRepository;
+import com.refinements.visualizer.card.SpecCardApi;
+import com.refinements.visualizer.card.SpecCardView;
 import com.refinements.visualizer.card.model.SpecFormat;
 import com.refinements.visualizer.connection.Connection;
+import com.refinements.visualizer.connection.ConnectionApi;
+import com.refinements.visualizer.connection.ConnectionDto;
+import com.refinements.visualizer.connection.ConnectionKey;
 import com.refinements.visualizer.connection.ConnectionKind;
-import com.refinements.visualizer.connection.ConnectionRepository;
-import com.refinements.visualizer.layout.BaselineLayout;
-import com.refinements.visualizer.layout.BaselineLayoutRepository;
+import com.refinements.visualizer.connection.ConnectionView;
+import com.refinements.visualizer.connection.FlowApi;
+import com.refinements.visualizer.layout.LayoutApi;
+import com.refinements.visualizer.layout.LayoutView;
 import com.refinements.visualizer.microservice.Microservice;
-import com.refinements.visualizer.microservice.MicroserviceRepository;
+import com.refinements.visualizer.microservice.MicroserviceApi;
+import com.refinements.visualizer.microservice.MicroserviceView;
+import com.refinements.visualizer.note.NoteApi;
 import com.refinements.visualizer.workspace.WorkspaceRevision;
-import java.lang.reflect.Constructor;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -29,18 +35,17 @@ class CanvasServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-11-22T10:00:00Z");
 
-    private final MicroserviceRepository microservices = mock(MicroserviceRepository.class);
-    private final SpecCardRepository cards = mock(SpecCardRepository.class);
-    private final ConnectionRepository connections = mock(ConnectionRepository.class);
-    private final com.refinements.visualizer.connection.FlowRepository flows =
-            mock(com.refinements.visualizer.connection.FlowRepository.class);
-    private final BaselineLayoutRepository layouts = mock(BaselineLayoutRepository.class);
+    private final MicroserviceApi microservices = mock(MicroserviceApi.class);
+    private final SpecCardApi cards = mock(SpecCardApi.class);
+    private final ConnectionApi connections = mock(ConnectionApi.class);
+    private final FlowApi flows = mock(FlowApi.class);
+    private final LayoutApi layouts = mock(LayoutApi.class);
     private final WorkspaceRevision revision = mock(WorkspaceRevision.class);
     private final CanvasService service =
             new CanvasService(microservices, cards, connections, flows, layouts, revision, notes());
 
-    private static com.refinements.visualizer.note.NoteService notes() {
-        com.refinements.visualizer.note.NoteService n = mock(com.refinements.visualizer.note.NoteService.class);
+    private static NoteApi notes() {
+        NoteApi n = mock(NoteApi.class);
         org.mockito.Mockito.when(n.list()).thenReturn(List.of());
         return n;
     }
@@ -58,12 +63,43 @@ class CanvasServiceTest {
         return f;
     }
 
-    private static BaselineLayout layout(List<java.util.UUID> collapsed) throws Exception {
-        Constructor<BaselineLayout> ctor = BaselineLayout.class.getDeclaredConstructor();
-        ctor.setAccessible(true);
-        BaselineLayout l = ctor.newInstance();
-        l.replace(Map.of(), collapsed, NOW);
-        return l;
+    private static LayoutView layout(List<java.util.UUID> collapsed) {
+        return new LayoutView(Map.of(), collapsed, 0);
+    }
+
+    // fixtures are built as entities and handed to the module APIs as views (specs/005: canvas reads APIs only)
+
+    private static MicroserviceView view(Microservice m) {
+        return new MicroserviceView(
+                m.getId(),
+                m.getName(),
+                m.getNameNormalized(),
+                m.getDescription(),
+                m.getSpecCardId(),
+                m.getTeam(),
+                m.getRepositoryUrl(),
+                m.getDocsUrl());
+    }
+
+    private static SpecCardView view(SpecCard c) {
+        return new SpecCardView(
+                c.getId(),
+                c.getTitle(),
+                c.getApiVersion(),
+                c.getSpecFormat(),
+                c.getSourceType(),
+                c.getSourceUrl(),
+                c.getContentHash(),
+                c.getLastSyncAt(),
+                c.getLastSyncStatus(),
+                c.getEndpoints(),
+                c.getCreatedAt());
+    }
+
+    private static ConnectionView view(Connection f) {
+        return new ConnectionView(
+                ConnectionDto.from(f),
+                new ConnectionKey(f.getSourceNameNormalized(), f.getTargetNameNormalized(), f.getNameNormalized()));
     }
 
     @Test
@@ -77,15 +113,15 @@ class CanvasServiceTest {
         orders.link(docked.getId(), NOW);
         billing.link(collapsed.getId(), NOW);
 
-        when(microservices.findAllByOrderByNameNormalizedAsc()).thenReturn(List.of(billing, orders, payments));
-        when(cards.findAll()).thenReturn(List.of(docked, collapsed, loose));
+        when(microservices.findAllOrdered()).thenReturn(List.of(view(billing), view(orders), view(payments)));
+        when(cards.findAll()).thenReturn(List.of(view(docked), view(collapsed), view(loose)));
         when(connections.findAll())
                 .thenReturn(List.of(
-                        connection(orders, billing, "A"),
-                        connection(orders, billing, "B"),
-                        connection(billing, orders, "C"),
-                        connection(null, payments, "Lost")));
-        when(layouts.getSingleton()).thenReturn(layout(List.of(collapsed.getId())));
+                        view(connection(orders, billing, "A")),
+                        view(connection(orders, billing, "B")),
+                        view(connection(billing, orders, "C")),
+                        view(connection(null, payments, "Lost"))));
+        when(layouts.current()).thenReturn(layout(List.of(collapsed.getId())));
         when(revision.current()).thenReturn(7L);
 
         CanvasResponse c = service.canvas();

@@ -4,11 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.refinements.visualizer.connection.Connection;
 import com.refinements.visualizer.connection.ConnectionKind;
-import com.refinements.visualizer.microservice.Microservice;
+import com.refinements.visualizer.microservice.MicroserviceView;
+import com.refinements.visualizer.shared.Names;
 import com.refinements.visualizer.support.TestSpecs;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /** research R5: replace semantics, matching by (source, target, name), microservices never removed. */
@@ -17,26 +19,26 @@ class ConnectionsDocumentDiffTest {
     private static final Instant NOW = Instant.parse("2026-11-22T10:00:00Z");
     private final ConnectionsDocumentReader reader = new ConnectionsDocumentReader(TestSpecs.props());
 
-    private static Microservice ms(String name, String description) {
-        return new Microservice(name, description, NOW);
+    private static MicroserviceView ms(String name, String description) {
+        return new MicroserviceView(UUID.randomUUID(), name, Names.norm(name), description, null, null, null, null);
     }
 
     private static Connection connection(
-            Microservice s, Microservice t, String name, ConnectionKind kind, String description) {
+            MicroserviceView s, MicroserviceView t, String name, ConnectionKind kind, String description) {
         Connection f = new Connection(name, kind, description, NOW);
-        f.setSource(s == null ? null : s.getId(), s == null ? "Gone" : s.getName(), NOW);
-        f.setTarget(t.getId(), t.getName(), NOW);
+        f.setSource(s == null ? null : s.id(), s == null ? "Gone" : s.name(), NOW);
+        f.setTarget(t.id(), t.name(), NOW);
         return f;
     }
 
-    private ConnectionsDocumentDiff.Plan diff(String doc, List<Microservice> ms, List<Connection> connections) {
+    private ConnectionsDocumentDiff.Plan diff(String doc, List<MicroserviceView> ms, List<Connection> connections) {
         return ConnectionsDocumentDiff.diff(reader.read(doc), ms, connections);
     }
 
     @Test
     void addChangeRemoveKeepingIds() {
-        Microservice orders = ms("Orders", null);
-        Microservice billing = ms("Billing", null);
+        MicroserviceView orders = ms("Orders", null);
+        MicroserviceView billing = ms("Billing", null);
         Connection keep = connection(orders, billing, "Create invoice", ConnectionKind.REQUEST, null);
         Connection change = connection(orders, billing, "Order placed", ConnectionKind.REQUEST, null);
         Connection remove = connection(billing, orders, "Old", null, null);
@@ -66,7 +68,7 @@ class ConnectionsDocumentDiffTest {
 
     @Test
     void danglingConnectionsMatchByNameAndMicroservicesAreNeverRemoved() {
-        Microservice billing = ms("Billing", null);
+        MicroserviceView billing = ms("Billing", null);
         Connection dangling = connection(null, billing, "Pay", null, null);
         String doc =
                 "{\"formatVersion\":2,\"connections\":[{\"name\":\"Pay\",\"source\":\"Gone\",\"target\":\"Billing\"}]}";
@@ -79,9 +81,9 @@ class ConnectionsDocumentDiffTest {
 
     @Test
     void descriptionAbsentNullOrDifferent() {
-        Microservice a = ms("A", "Old");
-        Microservice b = ms("B", "Kept");
-        Microservice c = ms("C", "Cleared");
+        MicroserviceView a = ms("A", "Old");
+        MicroserviceView b = ms("B", "Kept");
+        MicroserviceView c = ms("C", "Cleared");
         String doc = "{\"formatVersion\":2,\"microservices\":["
                 + "{\"name\":\"A\",\"description\":\"New\"},{\"name\":\"B\"},{\"name\":\"C\",\"description\":null},"
                 + "{\"name\":\"D\",\"description\":\"Fresh\"}],\"connections\":[]}";
@@ -95,8 +97,8 @@ class ConnectionsDocumentDiffTest {
 
     @Test
     void flowsAreCreatedRecoloredAndFlowChangesDetected() {
-        Microservice a = ms("A", null);
-        Microservice b = ms("B", null);
+        MicroserviceView a = ms("A", null);
+        MicroserviceView b = ms("B", null);
         var checkout = new com.refinements.visualizer.connection.Flow(
                 "Checkout", com.refinements.visualizer.connection.FlowColor.BLUE, NOW);
         var keep = new com.refinements.visualizer.connection.Flow(
@@ -121,8 +123,8 @@ class ConnectionsDocumentDiffTest {
 
     @Test
     void anEndpointChangeIsAConnectionChange() {
-        Microservice a = ms("A", null);
-        Microservice b = ms("B", null);
+        MicroserviceView a = ms("A", null);
+        MicroserviceView b = ms("B", null);
         Connection f = connection(a, b, "Pay", null, null);
         f.setEndpoint("POST /pay", NOW);
         String doc = "{\"formatVersion\":2,\"connections\":[{\"name\":\"Pay\",\"source\":\"A\",\"target\":\"B\","
@@ -136,8 +138,8 @@ class ConnectionsDocumentDiffTest {
 
     @Test
     void identicalDocumentIsUnchanged() {
-        Microservice orders = ms("Orders", "Lifecycle");
-        Microservice billing = ms("Billing", null);
+        MicroserviceView orders = ms("Orders", "Lifecycle");
+        MicroserviceView billing = ms("Billing", null);
         List<Connection> connections = new ArrayList<>();
         connections.add(connection(orders, billing, "Create invoice", ConnectionKind.REQUEST, "Monthly"));
         String text = new ConnectionsDocumentWriter()

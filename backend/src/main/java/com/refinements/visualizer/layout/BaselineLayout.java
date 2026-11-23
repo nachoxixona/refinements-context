@@ -24,8 +24,6 @@ import org.hibernate.type.SqlTypes;
 public class BaselineLayout {
 
     public static final short SINGLETON_ID = 1;
-    public static final String MS_PREFIX = "ms:";
-    public static final String CARD_PREFIX = "card:";
 
     @Id
     private Short id;
@@ -46,14 +44,6 @@ public class BaselineLayout {
     private Instant updatedAt;
 
     protected BaselineLayout() {}
-
-    public static String msKey(UUID id) {
-        return MS_PREFIX + id;
-    }
-
-    public static String cardKey(UUID id) {
-        return CARD_PREFIX + id;
-    }
 
     public Short getId() {
         return id;

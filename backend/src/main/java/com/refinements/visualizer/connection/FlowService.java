@@ -1,6 +1,5 @@
 package com.refinements.visualizer.connection;
 
-import com.refinements.visualizer.connection.dto.FlowDto;
 import com.refinements.visualizer.connection.dto.FlowMutation;
 import com.refinements.visualizer.connection.dto.FlowPatch;
 import com.refinements.visualizer.shared.Names;
@@ -9,6 +8,7 @@ import com.refinements.visualizer.shared.errors.ConflictException;
 import com.refinements.visualizer.shared.errors.NotFoundException;
 import com.refinements.visualizer.workspace.WorkspaceRevision;
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Flows: create, rename, recolor, delete (FR-049). Deleting a flow ungroups its connections (FR-050). */
 @Service
-public class FlowService {
+public class FlowService implements FlowApi {
 
     private final FlowRepository flows;
     private final ConnectionRepository connections;
@@ -132,5 +132,13 @@ public class FlowService {
 
     private static ConflictException duplicate(String name) {
         return new ConflictException("A flow named '" + name + "' already exists.", ConflictException.DUPLICATE_NAME);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<FlowDto> findAllOrdered() {
+        return flows.findAllByOrderByNameNormalizedAsc().stream()
+                .map(FlowDto::from)
+                .toList();
     }
 }

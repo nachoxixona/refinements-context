@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
  * workspace revision (research R5).
  */
 @Service
-public class NoteService {
+public class NoteService implements NoteApi {
 
     private final NoteRepository notes;
     private final Clock clock;

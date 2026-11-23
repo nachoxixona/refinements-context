@@ -9,7 +9,7 @@ import com.refinements.visualizer.connection.document.ConnectionsDocumentChanges
 import com.refinements.visualizer.connection.document.ConnectionsDocumentChanges.MicroserviceChange;
 import com.refinements.visualizer.connection.document.ConnectionsDocumentModel.ConnectionEntry;
 import com.refinements.visualizer.connection.document.ConnectionsDocumentModel.MicroserviceEntry;
-import com.refinements.visualizer.microservice.Microservice;
+import com.refinements.visualizer.microservice.MicroserviceView;
 import com.refinements.visualizer.shared.Names;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,22 +29,22 @@ public final class ConnectionsDocumentDiff {
     public record ConnectionUpdate(Connection connection, ConnectionEntry entry) {}
 
     /** A listed microservice whose description or ownership changes; absent properties stay as they are. */
-    public record Describe(Microservice microservice, MicroserviceEntry entry) {
+    public record Describe(MicroserviceView microservice, MicroserviceEntry entry) {
 
         public String description() {
-            return entry.descriptionPresent() ? entry.description() : microservice.getDescription();
+            return entry.descriptionPresent() ? entry.description() : microservice.description();
         }
 
         public String team() {
-            return entry.teamPresent() ? entry.team() : microservice.getTeam();
+            return entry.teamPresent() ? entry.team() : microservice.team();
         }
 
         public String repository() {
-            return entry.repositoryPresent() ? entry.repository() : microservice.getRepositoryUrl();
+            return entry.repositoryPresent() ? entry.repository() : microservice.repositoryUrl();
         }
 
         public String docs() {
-            return entry.docsPresent() ? entry.docs() : microservice.getDocsUrl();
+            return entry.docsPresent() ? entry.docs() : microservice.docsUrl();
         }
     }
 
@@ -64,13 +64,13 @@ public final class ConnectionsDocumentDiff {
     private ConnectionsDocumentDiff() {}
 
     public static Plan diff(
-            ConnectionsDocumentModel doc, List<Microservice> microservices, List<Connection> connections) {
+            ConnectionsDocumentModel doc, List<MicroserviceView> microservices, List<Connection> connections) {
         return diff(doc, microservices, List.of(), connections);
     }
 
     public static Plan diff(
             ConnectionsDocumentModel doc,
-            List<Microservice> microservices,
+            List<MicroserviceView> microservices,
             List<Flow> flows,
             List<Connection> connections) {
         Map<String, Flow> flowsByName = new LinkedHashMap<>();
@@ -96,8 +96,8 @@ public final class ConnectionsDocumentDiff {
                         g.color().documentValue()));
             }
         }
-        Map<String, Microservice> byName = new LinkedHashMap<>();
-        microservices.forEach(m -> byName.put(m.getNameNormalized(), m));
+        Map<String, MicroserviceView> byName = new LinkedHashMap<>();
+        microservices.forEach(m -> byName.put(m.nameNormalized(), m));
 
         // microservices: listed entries first (their spelling wins), then connection ends, in document order
         Map<String, String> toCreate = new LinkedHashMap<>();
@@ -106,26 +106,26 @@ public final class ConnectionsDocumentDiff {
         List<MicroserviceChange> msChanged = new ArrayList<>();
         for (MicroserviceEntry e : doc.microservices()) {
             String norm = Names.norm(e.name());
-            Microservice existing = byName.get(norm);
+            MicroserviceView existing = byName.get(norm);
             if (existing == null) {
                 toCreate.putIfAbsent(norm, e.name());
                 createEntries.putIfAbsent(norm, e);
             } else {
                 Describe d = new Describe(existing, e);
-                if (!Objects.equals(existing.getDescription(), d.description())
-                        || !Objects.equals(existing.getTeam(), d.team())
-                        || !Objects.equals(existing.getRepositoryUrl(), d.repository())
-                        || !Objects.equals(existing.getDocsUrl(), d.docs())) {
+                if (!Objects.equals(existing.description(), d.description())
+                        || !Objects.equals(existing.team(), d.team())
+                        || !Objects.equals(existing.repositoryUrl(), d.repository())
+                        || !Objects.equals(existing.docsUrl(), d.docs())) {
                     describe.add(d);
                     msChanged.add(new MicroserviceChange(
-                            existing.getName(),
-                            existing.getDescription(),
+                            existing.name(),
+                            existing.description(),
                             d.description(),
-                            existing.getTeam(),
+                            existing.team(),
                             d.team(),
-                            existing.getRepositoryUrl(),
+                            existing.repositoryUrl(),
                             d.repository(),
-                            existing.getDocsUrl(),
+                            existing.docsUrl(),
                             d.docs()));
                 }
             }

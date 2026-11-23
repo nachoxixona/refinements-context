@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.refinements.visualizer.connection.Connection;
 import com.refinements.visualizer.connection.document.ConnectionsDocumentModel.ConnectionEntry;
 import com.refinements.visualizer.connection.document.ConnectionsDocumentModel.MicroserviceEntry;
-import com.refinements.visualizer.microservice.Microservice;
+import com.refinements.visualizer.microservice.MicroserviceView;
 import com.refinements.visualizer.shared.Names;
 import com.refinements.visualizer.support.TestSpecs;
 import java.time.Instant;
@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /** research R4: deterministic export; writer → reader → diff is a no-op (SC-003). */
@@ -23,32 +24,36 @@ class ConnectionsDocumentWriterTest {
     private final ConnectionsDocumentWriter writer = new ConnectionsDocumentWriter();
 
     /** Builds the baseline a document describes, as an apply would. */
-    private record Baseline(List<Microservice> microservices, List<Connection> connections) {}
+    private record Baseline(List<MicroserviceView> microservices, List<Connection> connections) {}
 
     private Baseline baselineOf(ConnectionsDocumentModel m) {
-        Map<String, Microservice> byName = new HashMap<>();
-        List<Microservice> ms = new ArrayList<>();
+        Map<String, MicroserviceView> byName = new HashMap<>();
+        List<MicroserviceView> ms = new ArrayList<>();
         for (MicroserviceEntry e : m.microservices()) {
-            Microservice x = new Microservice(e.name(), e.description(), NOW);
+            MicroserviceView x = view(e.name(), e.description());
             byName.put(Names.norm(e.name()), x);
             ms.add(x);
         }
         List<Connection> connections = new ArrayList<>();
         for (ConnectionEntry e : m.connections()) {
-            Microservice s = byName.computeIfAbsent(Names.norm(e.source()), k -> add(ms, e.source()));
-            Microservice t = byName.computeIfAbsent(Names.norm(e.target()), k -> add(ms, e.target()));
+            MicroserviceView s = byName.computeIfAbsent(Names.norm(e.source()), k -> add(ms, e.source()));
+            MicroserviceView t = byName.computeIfAbsent(Names.norm(e.target()), k -> add(ms, e.target()));
             Connection f = new Connection(e.name(), e.kind(), e.description(), NOW);
-            f.setSource(s.getId(), s.getName(), NOW);
-            f.setTarget(t.getId(), t.getName(), NOW);
+            f.setSource(s.id(), s.name(), NOW);
+            f.setTarget(t.id(), t.name(), NOW);
             connections.add(f);
         }
         return new Baseline(ms, connections);
     }
 
-    private static Microservice add(List<Microservice> ms, String name) {
-        Microservice m = new Microservice(name, null, NOW);
+    private static MicroserviceView add(List<MicroserviceView> ms, String name) {
+        MicroserviceView m = view(name, null);
         ms.add(m);
         return m;
+    }
+
+    private static MicroserviceView view(String name, String description) {
+        return new MicroserviceView(UUID.randomUUID(), name, Names.norm(name), description, null, null, null, null);
     }
 
     @Test
@@ -116,10 +121,10 @@ class ConnectionsDocumentWriterTest {
 
     @Test
     void danglingConnectionsAreExcludedAndCounted() {
-        Microservice a = new Microservice("A", null, NOW);
+        MicroserviceView a = view("A", null);
         Connection f = new Connection("Lost", null, null, NOW);
         f.setSource(null, "Gone", NOW);
-        f.setTarget(a.getId(), "A", NOW);
+        f.setTarget(a.id(), "A", NOW);
         ConnectionsDocumentWriter.Export e = writer.export(List.of(a), List.of(f));
         assertThat(e.excludedDanglingConnections()).isEqualTo(1);
         assertThat(e.document().connections()).isEmpty();

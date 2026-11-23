@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.refinements.visualizer.connection.Connection;
 import com.refinements.visualizer.connection.Flow;
-import com.refinements.visualizer.microservice.Microservice;
+import com.refinements.visualizer.microservice.MicroserviceView;
 import com.refinements.visualizer.shared.Names;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -42,11 +42,11 @@ public class ConnectionsDocumentWriter {
         this.writer = new ObjectMapper().writer(printer);
     }
 
-    public Export export(List<Microservice> microservices, List<Connection> connections) {
+    public Export export(List<MicroserviceView> microservices, List<Connection> connections) {
         return export(microservices, List.of(), connections);
     }
 
-    public Export export(List<Microservice> microservices, List<Flow> flows, List<Connection> connections) {
+    public Export export(List<MicroserviceView> microservices, List<Flow> flows, List<Connection> connections) {
         List<Flow> gs = new ArrayList<>(flows);
         gs.sort(Comparator.comparing(Flow::getNameNormalized));
         Map<UUID, String> flowNames = new HashMap<>();
@@ -56,12 +56,12 @@ public class ConnectionsDocumentWriter {
             flowDocs.add(
                     new ConnectionsDocumentDto.FlowDoc(g.getName(), g.getColor().documentValue()));
         }
-        List<Microservice> ms = new ArrayList<>(microservices);
-        ms.sort(Comparator.comparing(Microservice::getNameNormalized));
+        List<MicroserviceView> ms = new ArrayList<>(microservices);
+        ms.sort(Comparator.comparing(MicroserviceView::nameNormalized));
         List<ConnectionsDocumentDto.MicroserviceDoc> msDocs = new ArrayList<>();
-        for (Microservice m : ms) {
+        for (MicroserviceView m : ms) {
             msDocs.add(new ConnectionsDocumentDto.MicroserviceDoc(
-                    m.getName(), m.getDescription(), m.getTeam(), m.getRepositoryUrl(), m.getDocsUrl()));
+                    m.name(), m.description(), m.team(), m.repositoryUrl(), m.docsUrl()));
         }
         List<Connection> attached = new ArrayList<>();
         int dangling = 0;
