@@ -268,11 +268,11 @@ inbound port; plain domain + `*Entity`/`*Mapper` in every module; root package f
 
 ## Phase 6: Polish & Cross-Cutting
 
-- [ ] T061 Run the frontend e2e suite (quickstart §6): `npx playwright test` in `frontend/`. Confirm `git diff --stat -- frontend/` is empty since the baseline commit (SC-002, FR-005).
-- [ ] T062 Run the live-data smoke check (quickstart §7): `docker compose up -d --build`, then compare `GET /api/canvas` and `GET /api/connections-document` with the T002 snapshots. Confirm Flyway reports no pending migration (FR-003).
-- [ ] T063 Compare the `PerformanceSmokeIT` timings with `specs/005-modular-backend/baseline.md`, record them there, and confirm they are no more than 10% slower (SC-006).
-- [ ] T064 [P] Update the project memory note and `README.md` (backend section) with the module structure and the `ModularityTest` gate.
-- [ ] T065 🔖 Commit "005: verification and docs".
+- [X] T061 Run the frontend e2e suite (quickstart §6): `npx playwright test` in `frontend/`. Confirm `git diff --stat -- frontend/` is empty since the baseline commit (SC-002, FR-005).
+- [X] T062 Run the live-data smoke check (quickstart §7): `docker compose up -d --build`, then compare `GET /api/canvas` and `GET /api/connections-document` with the T002 snapshots. Confirm Flyway reports no pending migration (FR-003).
+- [X] T063 Compare the `PerformanceSmokeIT` timings with `specs/005-modular-backend/baseline.md`, record them there, and confirm they are no more than 10% slower (SC-006).
+- [X] T064 [P] Update the project memory note and `README.md` (backend section) with the module structure and the `ModularityTest` gate.
+- [X] T065 🔖 Commit "005: verification and docs".
 
 ---
 

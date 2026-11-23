@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-23
 
-**Status**: Draft
+**Status**: Implemented (2026-11-23)
 
 **Input**: User description: "Restructure the backend into a Spring Modulith modular monolith where each module follows a ports-and-adapters (hexagonal) layout. Pure refactor: REST API, database schema and frontend behavior must not change. Modules: shared, workspace, card (ingestion folded in), microservice, connection, layout, note, scenario, canvas. Break the microservice↔connection and card↔microservice cycles with synchronous ports. Core modules get plain domain models separate from persistence; small modules may keep persistence entities as their model. Add an automated modularity check and generated module documentation. Existing integration tests must pass unchanged. Initialize version control and make a baseline commit first. Migrate one module at a time, starting with note."
 

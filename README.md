@@ -26,16 +26,18 @@ A canvas for refinement meetings that shows your microservice architecture:
 
 Docs:
 
-- Current feature: [`specs/003-declared-connections/`](specs/003-declared-connections/) (spec, plan, data
-  model, contracts, quickstart)
-- Previous feature (inferred connections, superseded): [`specs/002-architecture-visualizer/`](specs/002-architecture-visualizer/)
+- Feature specs: [`specs/003-declared-connections/`](specs/003-declared-connections/) (declared connections and
+  flows), [`specs/004-meeting-tools/`](specs/004-meeting-tools/) (walkthrough, ownership, notes, undo; holds the
+  current API contract), [`specs/005-modular-backend/`](specs/005-modular-backend/) (the backend's modular
+  structure). Superseded: [`specs/002-architecture-visualizer/`](specs/002-architecture-visualizer/) (inferred
+  connections)
 - Backend architecture: [`docs/modules/`](docs/modules/README.md) (modules, their dependencies and inner
   layout; diagrams generated from the code)
 - Project principles: [`.specify/memory/constitution.md`](.specify/memory/constitution.md) (v2.1.0)
 
 | Part | Stack |
 |------|-------|
-| `backend/` | Java 21, Spring Boot 3.5, swagger-parser 2.1, Flyway, PostgreSQL 16 |
+| `backend/` | Java 21, Spring Boot 3.5, Spring Modulith 1.4, jMolecules, swagger-parser 2.1, Flyway, PostgreSQL 16 |
 | `frontend/` | React 18, TypeScript (strict), Vite, @xyflow/react 12, elkjs, CodeMirror 6, TanStack Query, Zustand |
 
 ## Prerequisites
@@ -83,6 +85,11 @@ cd frontend && npm run lint         # ESLint
 cd frontend && npm test             # Vitest
 cd frontend && npm run e2e          # Playwright; starts a throwaway PostgreSQL container, a backend (:8081) and Vite (:5174)
 ```
+
+`./mvnw verify` includes `ModularityTest`: it fails the build when a module uses another module's internals or an
+undeclared module, when module dependencies form a cycle, or when a module breaks the ports-and-adapters layout
+(for example a `domain` class using JPA or Jackson). It also regenerates [`docs/modules/`](docs/modules/README.md);
+commit that folder when it changes.
 
 The API contract lives in `specs/004-meeting-tools/contracts/openapi.yaml`. After changing it, run
 `npm run gen:api` in `frontend/` to regenerate the TypeScript types; `ContractConformanceIT` fails the
