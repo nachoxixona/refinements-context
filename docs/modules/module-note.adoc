@@ -1,0 +1,9 @@
+[%autowidth.stretch, cols="h,a"]
+|===
+|Base package
+|`com.refinements.visualizer.note`
+|Spring components
+|_Application_
+
+* `c.r.v.n.NoteApi`, `c.r.v.n.application.port.in.NoteUseCases` (via `c.r.v.n.application.NoteService` -- Baseline notes (spec 004 FR-018, FR-019). Notes are not part of the connections document, so they don't bump the workspace revision (research R5).)
+|===

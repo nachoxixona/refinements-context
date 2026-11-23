@@ -29,7 +29,9 @@ Docs:
 - Current feature: [`specs/003-declared-connections/`](specs/003-declared-connections/) (spec, plan, data
   model, contracts, quickstart)
 - Previous feature (inferred connections, superseded): [`specs/002-architecture-visualizer/`](specs/002-architecture-visualizer/)
-- Project principles: [`.specify/memory/constitution.md`](.specify/memory/constitution.md) (v2.0.0)
+- Backend architecture: [`docs/modules/`](docs/modules/README.md) (modules, their dependencies and inner
+  layout; diagrams generated from the code)
+- Project principles: [`.specify/memory/constitution.md`](.specify/memory/constitution.md) (v2.1.0)
 
 | Part | Stack |
 |------|-------|

@@ -9,6 +9,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.jmolecules.archunit.JMoleculesArchitectureRules;
 import org.junit.jupiter.api.Test;
 import org.springframework.modulith.core.ApplicationModules;
+import org.springframework.modulith.docs.Documenter;
 
 /**
  * Module structure checks (specs/005-modular-backend, FR-013 – FR-015). Allowed dependencies between modules are
@@ -87,6 +88,15 @@ class ModularityTest {
                 .resideInAPackage("..adapter.out.persistence..")
                 .because("only the store adapter touches entities and repositories (research R7)")
                 .check(MAIN);
+    }
+
+    /**
+     * FR-019: regenerates the module documentation in {@code docs/modules/} (overview, one diagram and one canvas
+     * per module). Commit the result; docs/modules/README.md explains how to read it.
+     */
+    @Test
+    void writesDocumentation() {
+        new Documenter(MODULES, Documenter.Options.defaults().withOutputFolder("../docs/modules")).writeDocumentation();
     }
 
     /** Prints the current violations; useful while restructuring. */

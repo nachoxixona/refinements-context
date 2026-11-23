@@ -1,0 +1,28 @@
+[%autowidth.stretch, cols="h,a"]
+|===
+|Base package
+|`com.refinements.visualizer.shared`
+|Spring components
+|_Configuration properties_
+
+* `c.r.v.s.VisualizerProperties` -- Typed binding of the `visualizer.*` configuration keys (T008).
+
+_Others_
+
+* `c.r.v.s.ApiExceptionHandler` -- Maps domain exceptions to RFC 9457 Problem Details (contracts/openapi.yaml, T010). Bean Validation failures are handled by `ResponseEntityExceptionHandler` and become 400.
+* `c.r.v.s.JacksonConfig` -- ISO-8601 instants, nulls written explicitly ("omit nothing", so React Connection sees `position: null`), and unknown properties rejected on request DTOs (T011).
+* `c.r.v.s.OpenApiConfig` -- springdoc metadata matching contracts/openapi.yaml (T012). Swagger UI: /swagger-ui.html.
+* `c.r.v.s.RequestSizeLimitFilter` -- Rejects request bodies larger than `visualizer.http.max-body-bytes` with 413 (T011). This is the HTTP envelope limit; the 10 MB spec limit is checked separately on the decoded spec content.
+* `c.r.v.s.TimeConfig`
+|Properties
+|* `visualizer.connections-document.max-bytes` -- `java.lang.Long`, default `2097152`
+* `visualizer.connections-document.max-connections` -- `java.lang.Integer`, default `5000`
+* `visualizer.connections-document.max-microservices` -- `java.lang.Integer`, default `2000`
+* `visualizer.fetch.allowed-hosts` -- `java.util.List<java.lang.String>`
+* `visualizer.fetch.connect-timeout` -- `java.time.Duration`, default `5s`
+* `visualizer.fetch.max-redirects` -- `java.lang.Integer`, default `3`
+* `visualizer.fetch.read-timeout` -- `java.time.Duration`, default `15s`
+* `visualizer.http.max-body-bytes` -- `java.lang.Long`, default `12582912`
+* `visualizer.refs.remote-allowlist` -- `java.util.List<java.lang.String>`
+* `visualizer.spec.max-bytes` -- `java.lang.Long`, default `10485760`
+|===

@@ -1,0 +1,44 @@
+@startuml
+set separator none
+title Canvas
+
+top to bottom direction
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Component>
+
+Container_Boundary("VisualizerApplication.VisualizerApplication_boundary", "VisualizerApplication", $tags="") {
+  Component(VisualizerApplication.VisualizerApplication.Canvas, "Canvas", $techn="Module", $descr="", $tags="", $link="")
+  Component(VisualizerApplication.VisualizerApplication.Shared, "Shared", $techn="Module", $descr="", $tags="", $link="")
+  Component(VisualizerApplication.VisualizerApplication.Speccards, "Spec cards", $techn="Module", $descr="", $tags="", $link="")
+  Component(VisualizerApplication.VisualizerApplication.Notes, "Notes", $techn="Module", $descr="", $tags="", $link="")
+  Component(VisualizerApplication.VisualizerApplication.Workspace, "Workspace", $techn="Module", $descr="", $tags="", $link="")
+  Component(VisualizerApplication.VisualizerApplication.Microservices, "Microservices", $techn="Module", $descr="", $tags="", $link="")
+  Component(VisualizerApplication.VisualizerApplication.Connectionsandflows, "Connections and flows", $techn="Module", $descr="", $tags="", $link="")
+  Component(VisualizerApplication.VisualizerApplication.Layout, "Layout", $techn="Module", $descr="", $tags="", $link="")
+}
+
+Rel(VisualizerApplication.VisualizerApplication.Layout, VisualizerApplication.VisualizerApplication.Shared, "depends on", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Layout, VisualizerApplication.VisualizerApplication.Microservices, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Layout, VisualizerApplication.VisualizerApplication.Speccards, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Microservices, VisualizerApplication.VisualizerApplication.Shared, "depends on", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Microservices, VisualizerApplication.VisualizerApplication.Speccards, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Microservices, VisualizerApplication.VisualizerApplication.Workspace, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Speccards, VisualizerApplication.VisualizerApplication.Shared, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Canvas, VisualizerApplication.VisualizerApplication.Shared, "depends on", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Canvas, VisualizerApplication.VisualizerApplication.Microservices, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Canvas, VisualizerApplication.VisualizerApplication.Speccards, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Canvas, VisualizerApplication.VisualizerApplication.Connectionsandflows, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Canvas, VisualizerApplication.VisualizerApplication.Layout, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Canvas, VisualizerApplication.VisualizerApplication.Workspace, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Canvas, VisualizerApplication.VisualizerApplication.Notes, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Notes, VisualizerApplication.VisualizerApplication.Shared, "depends on", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Connectionsandflows, VisualizerApplication.VisualizerApplication.Speccards, "depends on", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Connectionsandflows, VisualizerApplication.VisualizerApplication.Shared, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Connectionsandflows, VisualizerApplication.VisualizerApplication.Microservices, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Connectionsandflows, VisualizerApplication.VisualizerApplication.Workspace, "uses", $techn="", $tags="", $link="")
+Rel(VisualizerApplication.VisualizerApplication.Workspace, VisualizerApplication.VisualizerApplication.Shared, "depends on", $techn="", $tags="", $link="")
+
+SHOW_LEGEND(true)
+@enduml

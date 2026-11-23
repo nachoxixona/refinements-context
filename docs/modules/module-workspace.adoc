@@ -1,0 +1,9 @@
+[%autowidth.stretch, cols="h,a"]
+|===
+|Base package
+|`com.refinements.visualizer.workspace`
+|Spring components
+|_Application_
+
+* `c.r.v.w.WorkspaceRevision` (via `c.r.v.w.application.WorkspaceRevisionService`)
+|===

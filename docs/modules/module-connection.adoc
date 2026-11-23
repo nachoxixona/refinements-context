@@ -1,0 +1,14 @@
+[%autowidth.stretch, cols="h,a"]
+|===
+|Base package
+|`com.refinements.visualizer.connection`
+|Spring components
+|_Application_
+
+* `c.r.v.c.ConnectionApi`, `c.r.v.c.application.port.in.ConnectionUseCases` (via `c.r.v.c.application.ConnectionService` -- Connections drawn and edited on the canvas (FR-017, FR-018a, FR-024, FR-027), with the rules of data-model.md §3 for Connection.name, Connection.kind, Connection.description and the (source, target, name) key. Every write bumps the workspace revision.)
+* `c.r.v.c.FlowApi`, `c.r.v.c.application.port.in.FlowUseCases` (via `c.r.v.c.application.FlowService` -- Flows: create, rename, recolor, delete (FR-049). Deleting a flow ungroups its connections (FR-050).)
+|Bean references
+|* `c.r.v.s.VisualizerProperties` (in Shared) -- Typed binding of the `visualizer.*` configuration keys (T008).
+* `c.r.v.m.MicroserviceApi` (in Microservices) -- What other modules may ask the microservice module (contracts/module-apis.md §microservice). The `*WithoutRevision` operations are for the connections document apply, which bumps the workspace revision once itself; they must run inside the caller's transaction.
+* `c.r.v.w.WorkspaceRevision` (in Workspace) -- The workspace revision (research R7 of 003). Every microservice or connection write calls `bump()` inside its own transaction; the row lock also serializes those writes. The connections document editor sends the revision it opened as `baseRevision`, checked by `check(Long)`.
+|===

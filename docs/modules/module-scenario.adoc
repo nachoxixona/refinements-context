@@ -1,0 +1,7 @@
+[%autowidth.stretch, cols="h,a"]
+|===
+|Base package
+|`com.refinements.visualizer.scenario`
+|Bean references
+|* `c.r.v.c.CanvasApi` (in Canvas) -- What other modules may ask the canvas module (contracts/module-apis.md §canvas).
+|===

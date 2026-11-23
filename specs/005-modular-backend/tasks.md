@@ -260,9 +260,9 @@ inbound port; plain domain + `*Entity`/`*Mapper` in every module; root package f
 
 **Independent Test**: Follow quickstart §5. `docs/modules/` contains an overview diagram and one view per module, and they match contracts/module-apis.md.
 
-- [ ] T058 [US3] Add a `writesDocumentation()` test to `T/ModularityTest.java`. It runs `new Documenter(modules, Documenter.Options.defaults().withOutputFolder("../docs/modules")).writeDocumentation()`, with the output folder relative to `backend/`. Check that it creates `components.puml` and the per-module `.puml` and `.adoc` files.
-- [ ] T059 [US3] Write `docs/modules/README.md`: how to regenerate (`./mvnw test -Dtest=ModularityTest`), the module table, the two SPI inversions (`ConnectionEndsPort`, `CardLinkPort`) and why they are synchronous (R4, R5). Add a link to it from the root `README.md`.
-- [ ] T060 🔖 [US3] Commit "005: generated module documentation".
+- [X] T058 [US3] Add a `writesDocumentation()` test to `T/ModularityTest.java`. It runs `new Documenter(modules, Documenter.Options.defaults().withOutputFolder("../docs/modules")).writeDocumentation()`, with the output folder relative to `backend/`. Check that it creates `components.puml` and the per-module `.puml` and `.adoc` files.
+- [X] T059 [US3] Write `docs/modules/README.md`: how to regenerate (`./mvnw test -Dtest=ModularityTest`), the module table, the two SPI inversions (`ConnectionEndsPort`, `CardLinkPort`) and why they are synchronous (R4, R5). Add a link to it from the root `README.md`.
+- [X] T060 🔖 [US3] Commit "005: generated module documentation".
 
 ---
 

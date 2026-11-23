@@ -1,0 +1,19 @@
+@startuml
+set separator none
+title Spec cards
+
+top to bottom direction
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Component>
+
+Container_Boundary("VisualizerApplication.VisualizerApplication_boundary", "VisualizerApplication", $tags="") {
+  Component(VisualizerApplication.VisualizerApplication.Shared, "Shared", $techn="Module", $descr="", $tags="", $link="")
+  Component(VisualizerApplication.VisualizerApplication.Speccards, "Spec cards", $techn="Module", $descr="", $tags="", $link="")
+}
+
+Rel(VisualizerApplication.VisualizerApplication.Speccards, VisualizerApplication.VisualizerApplication.Shared, "uses", $techn="", $tags="", $link="")
+
+SHOW_LEGEND(true)
+@enduml

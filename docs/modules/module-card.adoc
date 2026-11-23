@@ -1,0 +1,13 @@
+[%autowidth.stretch, cols="h,a"]
+|===
+|Base package
+|`com.refinements.visualizer.card`
+|Spring components
+|_Application_
+
+* `c.r.v.c.SpecCardApi`, `c.r.v.c.application.port.in.SpecCardUseCases` (via `c.r.v.c.application.SpecCardService` -- Import, re-sync and delete spec cards (FR-001 – FR-009). Cards never touch connections (FR-007).  
++
+`importCard` and `sync` deliberately run without a surrounding transaction (as before 005): a failed re-sync saves the FAILED status and then rethrows, and that save must not be rolled back.)
+|Bean references
+|* `c.r.v.s.VisualizerProperties` (in Shared) -- Typed binding of the `visualizer.*` configuration keys (T008).
+|===

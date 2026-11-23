@@ -1,0 +1,12 @@
+[%autowidth.stretch, cols="h,a"]
+|===
+|Base package
+|`com.refinements.visualizer.layout`
+|Spring components
+|_Application_
+
+* `c.r.v.l.LayoutApi`, `c.r.v.l.application.port.in.LayoutUseCases` (via `c.r.v.l.application.LayoutService` -- Saves positions and collapsed cards with optimistic locking (FR-014, FR-035).)
+|Bean references
+|* `c.r.v.m.MicroserviceApi` (in Microservices) -- What other modules may ask the microservice module (contracts/module-apis.md §microservice). The `*WithoutRevision` operations are for the connections document apply, which bumps the workspace revision once itself; they must run inside the caller's transaction.
+* `c.r.v.c.SpecCardApi` (in Spec cards) -- What other modules may ask the card module (contracts/module-apis.md §card).
+|===

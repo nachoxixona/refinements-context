@@ -1,0 +1,39 @@
+== VisualizerApplication
+plantuml::components.puml[,,format=svg]
+
+== Shared
+plantuml::module-shared.puml[,,format=svg]
+include::module-shared.adoc[]
+
+== Spec cards
+plantuml::module-card.puml[,,format=svg]
+include::module-card.adoc[]
+
+== Notes
+plantuml::module-note.puml[,,format=svg]
+include::module-note.adoc[]
+
+== Workspace
+plantuml::module-workspace.puml[,,format=svg]
+include::module-workspace.adoc[]
+
+== Microservices
+plantuml::module-microservice.puml[,,format=svg]
+include::module-microservice.adoc[]
+
+== Connections and flows
+plantuml::module-connection.puml[,,format=svg]
+include::module-connection.adoc[]
+
+== Layout
+plantuml::module-layout.puml[,,format=svg]
+include::module-layout.adoc[]
+
+== Canvas
+plantuml::module-canvas.puml[,,format=svg]
+include::module-canvas.adoc[]
+
+== Scenarios
+plantuml::module-scenario.puml[,,format=svg]
+include::module-scenario.adoc[]
+

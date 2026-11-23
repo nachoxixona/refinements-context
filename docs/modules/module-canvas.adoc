@@ -1,0 +1,17 @@
+[%autowidth.stretch, cols="h,a"]
+|===
+|Base package
+|`com.refinements.visualizer.canvas`
+|Spring components
+|_Application_
+
+* `c.r.v.c.CanvasApi`, `c.r.v.c.application.port.in.CanvasUseCases` (via `c.r.v.c.application.CanvasService` -- Builds `GET /api/canvas` (data-model.md §1–§5, research R8) from the other modules' public APIs, inside one read-only transaction so it reads a single consistent snapshot (specs/005 research R6).)
+|Bean references
+|* `c.r.v.m.MicroserviceApi` (in Microservices) -- What other modules may ask the microservice module (contracts/module-apis.md §microservice). The `*WithoutRevision` operations are for the connections document apply, which bumps the workspace revision once itself; they must run inside the caller's transaction.
+* `c.r.v.c.SpecCardApi` (in Spec cards) -- What other modules may ask the card module (contracts/module-apis.md §card).
+* `c.r.v.c.ConnectionApi` (in Connections and flows) -- What other modules may ask about connections (contracts/module-apis.md §connection).
+* `c.r.v.c.FlowApi` (in Connections and flows) -- What other modules may ask about flows (contracts/module-apis.md §connection).
+* `c.r.v.l.LayoutApi` (in Layout) -- What other modules may ask the layout module (contracts/module-apis.md §layout).
+* `c.r.v.w.WorkspaceRevision` (in Workspace) -- The workspace revision (research R7 of 003). Every microservice or connection write calls `bump()` inside its own transaction; the row lock also serializes those writes. The connections document editor sends the revision it opened as `baseRevision`, checked by `check(Long)`.
+* `c.r.v.n.NoteApi` (in Notes) -- What other modules may ask the note module (contracts/module-apis.md §note).
+|===

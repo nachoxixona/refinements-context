@@ -1,0 +1,12 @@
+[%autowidth.stretch, cols="h,a"]
+|===
+|Base package
+|`com.refinements.visualizer.microservice`
+|Spring components
+|_Application_
+
+* `c.r.v.m.MicroserviceApi`, `c.r.v.m.application.port.in.MicroserviceUseCases` (via `c.r.v.m.application.MicroserviceService` -- Microservices and their 1:1 spec link (data-model.md §2). Renames cascade to connection names (FR-028); deleting leaves connections dangling (FR-016, FR-027); creating re-attaches dangling connections with the same name (research R2). The order of connection-end changes, flushes, deletes and revision bumps follows specs/005 data-model.md "Behaviours whose ordering must be preserved".)
+|Bean references
+|* `c.r.v.c.SpecCardApi` (in Spec cards) -- What other modules may ask the card module (contracts/module-apis.md §card).
+* `c.r.v.w.WorkspaceRevision` (in Workspace) -- The workspace revision (research R7 of 003). Every microservice or connection write calls `bump()` inside its own transaction; the row lock also serializes those writes. The connections document editor sends the revision it opened as `baseRevision`, checked by `check(Long)`.
+|===
