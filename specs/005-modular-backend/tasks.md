@@ -149,15 +149,23 @@ These steps move packages only; behaviour does not change.
 - [X] T034 [P] [US2] Add `T/note/NoteModuleTest.java` with `@ApplicationModuleTest` and Testcontainers Postgres (reuse the `@ServiceConnection` pattern from `T/it/PostgresIntegrationTest.java`). It creates, lists and deletes a note through the use cases.
 - [X] T035 🔖 [US2] Commit "005: note module — ports and adapters (template)".
 
+### Template changes after review (2026-11-23)
+
+Applied to note and to every later module (contracts/module-apis.md "Template rules"): one `<Module>UseCases`
+inbound port; plain domain + `*Entity`/`*Mapper` in every module; root package framework-free (REST DTOs in
+`adapter/in/web`); OpenAPI and `GET /api/canvas` diffed against the baseline after each module.
+
+- [X] T066 [US2] Apply the review changes to `B/note/`: `NoteUseCases`; plain `domain/Note` with `NoteEntity`, `NoteMapper`; `NoteView` at the root and `NoteDto` in `adapter/in/web`; `CanvasResponse.notes` refers to the `Note` schema; `T/note/domain/NoteDomainTest.java`. OpenAPI and canvas output identical to the baseline.
+
 ### workspace, layout
 
-- [ ] T036 [P] [US2] Restructure `B/workspace/`:
+- [ ] T036 [P] [US2] Restructure `B/workspace/` (template rules; plain `domain/WorkspaceState` + `WorkspaceStateEntity`, data-model.md "Small modules"):
   - `domain/WorkspaceState.java`
   - `application/port/out/WorkspaceStateStore.java` (`find`, `lockSingleton`)
   - `adapter/out/persistence/` (repository and adapter)
 
   `WorkspaceRevision` stays at the root as the API and keeps `Propagation.MANDATORY` on `bump()` and `check()` (R9). `WorkspaceState.increment()` becomes `public` (visibility rule). Update `T/it/*` imports of `WorkspaceRevision` if needed. The stale-revision guard is `ConnectionsDocumentIT` (stale `baseRevision` → 409); if no test there covers it, add one before this change.
-- [ ] T037 [P] [US2] Restructure `B/layout/`:
+- [ ] T037 [P] [US2] Restructure `B/layout/` (template rules; plain `domain/BaselineLayout` + `BaselineLayoutEntity`, data-model.md "Small modules"):
   - `domain/BaselineLayout.java` (keeps its `version` field)
   - `application/LayoutService.java`, `port/in/SaveLayout.java`, `port/out/LayoutStore.java`
   - `adapter/in/web/LayoutController.java` and `LayoutUpdate`
@@ -238,7 +246,7 @@ These steps move packages only; behaviour does not change.
 
 - [ ] T056 [US2] In `T/ModularityTest.java`:
   - Add `JMoleculesArchitectureRules.ensureHexagonal()` over the main classes.
-  - Add an ArchUnit rule: classes in `..card.domain..`, `..microservice.domain..`, `..connection.domain..` and `..scenario.domain..` must not depend on `jakarta.persistence..`, `org.springframework.web..`, `org.springframework.data..` or `com.fasterxml.jackson..` (FR-015, research R8).
+  - Add an ArchUnit rule: classes in any module's `..domain..` package must not depend on `jakarta.persistence..`, `org.springframework.web..`, `org.springframework.data..` or `com.fasterxml.jackson..` (FR-015, research R8).
   - Fix any violations found.
 - [ ] T057 🔖 [US2] Commit "005: enforce hexagonal layout rules".
 

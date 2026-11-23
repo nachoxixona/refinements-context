@@ -1,2 +1,2 @@
-/** The note model. Small module: the JPA entity doubles as the domain model (specs/005 data-model.md). */
+/** The note model: plain Java, no web or persistence concerns (specs/005 data-model.md). */
 package com.refinements.visualizer.note.domain;

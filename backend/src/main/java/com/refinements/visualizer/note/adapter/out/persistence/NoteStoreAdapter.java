@@ -7,7 +7,10 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** {@link NoteStore} on Spring Data JPA. */
+/**
+ * {@link NoteStore} on Spring Data JPA. Saving copies the domain state onto the managed entity (or a new one), so
+ * Hibernate dirty checking and flush order work as before (research R7).
+ */
 @Component
 class NoteStoreAdapter implements NoteStore {
 
@@ -19,22 +22,26 @@ class NoteStoreAdapter implements NoteStore {
 
     @Override
     public List<Note> findAllOldestFirst() {
-        return repository.findAllByOrderByCreatedAtAscIdAsc();
+        return repository.findAllByOrderByCreatedAtAscIdAsc().stream()
+                .map(NoteMapper::toDomain)
+                .toList();
     }
 
     @Override
     public Optional<Note> findById(UUID id) {
-        return repository.findById(id);
+        return repository.findById(id).map(NoteMapper::toDomain);
     }
 
     @Override
-    public Note save(Note note) {
-        return repository.saveAndFlush(note);
+    public void save(Note note) {
+        NoteEntity e = repository.findById(note.getId()).orElseGet(() -> new NoteEntity(note.getId()));
+        NoteMapper.copy(note, e);
+        repository.saveAndFlush(e);
     }
 
     @Override
-    public void delete(Note note) {
-        repository.delete(note);
+    public void delete(UUID id) {
+        repository.deleteById(id);
         repository.flush();
     }
 }

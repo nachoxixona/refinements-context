@@ -13,9 +13,9 @@ public interface NoteStore {
 
     Optional<Note> findById(UUID id);
 
-    /** Saves and flushes; returns the managed note. */
-    Note save(Note note);
+    /** Inserts or updates, and flushes. */
+    void save(Note note);
 
     /** Deletes and flushes. */
-    void delete(Note note);
+    void delete(UUID id);
 }

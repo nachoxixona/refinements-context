@@ -1,10 +1,6 @@
 package com.refinements.visualizer.note.adapter.in.web;
 
-import com.refinements.visualizer.note.NoteDto;
-import com.refinements.visualizer.note.application.port.in.CreateNote;
-import com.refinements.visualizer.note.application.port.in.DeleteNote;
-import com.refinements.visualizer.note.application.port.in.ListNotes;
-import com.refinements.visualizer.note.application.port.in.UpdateNote;
+import com.refinements.visualizer.note.application.port.in.NoteUseCases;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -24,37 +20,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/notes")
 public class NoteController {
 
-    private final ListNotes listNotes;
-    private final CreateNote createNote;
-    private final UpdateNote updateNote;
-    private final DeleteNote deleteNote;
+    private final NoteUseCases notes;
 
-    NoteController(ListNotes listNotes, CreateNote createNote, UpdateNote updateNote, DeleteNote deleteNote) {
-        this.listNotes = listNotes;
-        this.createNote = createNote;
-        this.updateNote = updateNote;
-        this.deleteNote = deleteNote;
+    NoteController(NoteUseCases notes) {
+        this.notes = notes;
     }
 
     @GetMapping
     public List<NoteDto> list() {
-        return listNotes.list();
+        return notes.list().stream().map(NoteDto::from).toList();
     }
 
     @PostMapping
     public ResponseEntity<NoteDto> create(@Valid @RequestBody NoteWrite.Create write) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(createNote.create(write.text(), write.kind(), write.position()));
+                .body(NoteDto.from(notes.create(write.text(), write.kind(), write.position())));
     }
 
     @PatchMapping("/{noteId}")
     public NoteDto update(@PathVariable UUID noteId, @Valid @RequestBody NoteWrite patch) {
-        return updateNote.update(noteId, new UpdateNote.NoteChanges(patch.text(), patch.kind(), patch.position()));
+        return NoteDto.from(
+                notes.update(noteId, new NoteUseCases.NoteChanges(patch.text(), patch.kind(), patch.position())));
     }
 
     @DeleteMapping("/{noteId}")
     public ResponseEntity<Void> delete(@PathVariable UUID noteId) {
-        deleteNote.delete(noteId);
+        notes.delete(noteId);
         return ResponseEntity.noContent().build();
     }
 }

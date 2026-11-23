@@ -67,7 +67,7 @@ All Technical Context unknowns are resolved below. Each entry: **Decision**, **R
 
 - **Decision**:
   - **connection, microservice, card, scenario**: plain Java domain classes in `domain/` with no `jakarta.persistence`, `org.springframework.web` or Jackson annotations. JPA entities (`*Entity`) and Spring Data repositories live in `adapter/out/persistence/`, together with a hand-written `*Mapper`. The store adapter does `findById → copy state onto the managed entity → save`, so that Hibernate dirty checking, `@JdbcTypeCode(JSON)` columns and the flush order stay as they are.
-  - **note, layout, workspace**: the JPA entity stays as the model, in `domain/`. Its repository lives in `adapter/out/persistence/` behind a store port.
+  - **note, layout, workspace**: *changed 2026-11-23 after reviewing the note module* — these also get a plain `domain/` class with a `*Entity` and `*Mapper`, so every module has the same shape. The extra cost is small (three short entities).
 - Mapping is hand-written (no MapStruct): there are about 7 entities, and new build plugins are not worth it.
 - **Rationale**: This was the user's choice: full separation only where business rules live.
 - **Risk and mitigation**: The order of flushes matters (detach before delete, unlink before delete, `saveAndFlush` before reattach). Store ports keep explicit `flush()` and `saveAndFlush` semantics, and the integration tests cover each case (`MicroserviceLinkIT`, `ConnectionIT`, `SpecCardIT`).

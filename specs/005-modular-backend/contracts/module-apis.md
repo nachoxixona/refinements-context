@@ -48,8 +48,8 @@ change ownership or direction.
 - `WorkspaceRevision`: `long current()`, `long bump()` (MANDATORY tx), `void check(Long baseRevision)` (MANDATORY tx).
 
 ### note
-- `NoteApi`: `List<NoteDto> list()`.
-- Published records: `NoteDto`, `NoteKind`.
+- `NoteApi`: `List<NoteView> list()`.
+- Published records: `NoteView`, `NoteKind`. (`NoteDto`, REST schema `Note`, lives in `adapter/in/web`.)
 
 ### card
 - `SpecCardApi`:
@@ -103,18 +103,31 @@ change ownership or direction.
 
 ## Module layout (every module)
 
+Template rules (fixed after reviewing the note module, 2026-11-23):
+- **Root package = framework-free API only**: `<Module>Api` and the `*View` records / enums other modules use. No
+  Swagger, JPA or Jackson annotations there. REST DTOs (with their `@Schema` names) live in `adapter/in/web` and map
+  from the views. When another module's REST response embeds one of these views (for example `CanvasResponse.notes`),
+  that response points at the owning module's published schema with
+  `@ArraySchema(schema = @Schema(ref = "#/components/schemas/<Name>"))`, so the OpenAPI stays identical.
+- **One inbound port per module**: `application/port/in/<Module>UseCases` (commands as nested records). The
+  application service implements both `<Module>Api` and `<Module>UseCases` and is package-private.
+- **Plain domain in every module** (small ones too): `domain/` has no JPA, Spring or Jackson. Persistence has
+  `<Name>Entity` (package-private fields), `<Name>Mapper`, a package-private Spring Data repository and a
+  `<Name>StoreAdapter` that copies domain state onto the managed entity (research R7).
+- **Check**: diff `/v3/api-docs/api` and `GET /api/canvas` against the baseline after every module.
+
 ```text
 <module>/
   package-info.java          @ApplicationModule(allowedDependencies = …)
-  <Module>Api.java, *View/*Dto records     ← public API (root package)
+  <Module>Api.java, *View records, enums   ← public API (root package), framework-free
   spi/                       @NamedInterface("spi") — ports another module implements (card, microservice only)
   model/                     @NamedInterface("model") — card only
   domain/                    business model and rules
   application/               @Application — use-case services implementing port.in, and the <Module>Api facade
-    port/in/                 @PrimaryPort — use-case interfaces
+    port/in/                 @PrimaryPort — <Module>UseCases (one interface)
     port/out/                @SecondaryPort — store / fetch / parse / other-module ports
   adapter/
-    in/web/                  @PrimaryAdapter — controllers, request DTOs
-    out/persistence/         @SecondaryAdapter — JPA entities, Spring Data repos, mappers (core modules)
+    in/web/                  @PrimaryAdapter — controllers, request and response DTOs (@Schema names)
+    out/persistence/         @SecondaryAdapter — *Entity, *Mapper, Spring Data repo, *StoreAdapter (every module)
     out/<other>/             @SecondaryAdapter — e.g. card: fetcher, parser; connection: microservice SPI impl
 ```

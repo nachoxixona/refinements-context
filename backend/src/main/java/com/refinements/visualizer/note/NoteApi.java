@@ -6,5 +6,5 @@ import java.util.List;
 public interface NoteApi {
 
     /** All sticky notes, oldest first. */
-    List<NoteDto> list();
+    List<NoteView> list();
 }

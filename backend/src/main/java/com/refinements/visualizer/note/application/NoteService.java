@@ -1,12 +1,9 @@
 package com.refinements.visualizer.note.application;
 
 import com.refinements.visualizer.note.NoteApi;
-import com.refinements.visualizer.note.NoteDto;
 import com.refinements.visualizer.note.NoteKind;
-import com.refinements.visualizer.note.application.port.in.CreateNote;
-import com.refinements.visualizer.note.application.port.in.DeleteNote;
-import com.refinements.visualizer.note.application.port.in.ListNotes;
-import com.refinements.visualizer.note.application.port.in.UpdateNote;
+import com.refinements.visualizer.note.NoteView;
+import com.refinements.visualizer.note.application.port.in.NoteUseCases;
 import com.refinements.visualizer.note.application.port.out.NoteStore;
 import com.refinements.visualizer.note.domain.Note;
 import com.refinements.visualizer.shared.XYPosition;
@@ -22,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
  * workspace revision (research R5).
  */
 @Service
-class NoteService implements NoteApi, ListNotes, CreateNote, UpdateNote, DeleteNote {
+class NoteService implements NoteApi, NoteUseCases {
 
     private final NoteStore notes;
     private final Clock clock;
@@ -34,40 +31,38 @@ class NoteService implements NoteApi, ListNotes, CreateNote, UpdateNote, DeleteN
 
     @Override
     @Transactional(readOnly = true)
-    public List<NoteDto> list() {
-        return notes.findAllOldestFirst().stream().map(NoteService::toDto).toList();
+    public List<NoteView> list() {
+        return notes.findAllOldestFirst().stream().map(NoteService::view).toList();
     }
 
     @Override
     @Transactional
-    public NoteDto create(String text, NoteKind kind, XYPosition position) {
-        Note n = new Note(Note.checkText(text), kind == null ? NoteKind.NOTE : kind, position, clock.instant());
-        return toDto(notes.save(n));
+    public NoteView create(String text, NoteKind kind, XYPosition position) {
+        Note n = Note.create(text, kind, position, clock.instant());
+        notes.save(n);
+        return view(n);
     }
 
     @Override
     @Transactional
-    public NoteDto update(UUID id, NoteChanges changes) {
+    public NoteView update(UUID id, NoteChanges changes) {
         Note n = find(id);
-        n.change(
-                changes.text() == null ? n.getText() : Note.checkText(changes.text()),
-                changes.kind() == null ? n.getKind() : changes.kind(),
-                changes.position() == null ? n.getPosition() : changes.position(),
-                clock.instant());
-        return toDto(notes.save(n));
+        n.change(changes.text(), changes.kind(), changes.position(), clock.instant());
+        notes.save(n);
+        return view(n);
     }
 
     @Override
     @Transactional
     public void delete(UUID id) {
-        notes.delete(find(id));
+        notes.delete(find(id).getId());
     }
 
     private Note find(UUID id) {
         return notes.findById(id).orElseThrow(() -> new NotFoundException("No note " + id + "."));
     }
 
-    private static NoteDto toDto(Note n) {
-        return new NoteDto(n.getId(), n.getText(), n.getKind(), n.getPosition());
+    private static NoteView view(Note n) {
+        return new NoteView(n.getId(), n.getText(), n.getKind(), n.getPosition());
     }
 }

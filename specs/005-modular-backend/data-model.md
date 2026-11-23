@@ -69,13 +69,16 @@ module's API or SPI.
 - **Persistence** `SavedScenarioEntity`, which keeps today's JSON columns for content and baselineRef.
 - **Other outbound ports**: `Baseline`, an adapter that calls `canvas.CanvasApi.index()`.
 
-## Small modules: entity is the model
+## Small modules: plain domain too (changed 2026-11-23 after the note review)
 
-| Module | Model (in `domain/`) | Store port (in `application/port/out`) | Adapter |
+The small modules now follow the same split as the core ones: a plain `domain/` class, plus `*Entity`, `*Mapper`
+and a store adapter in `adapter/out/persistence/`.
+
+| Module | Domain (plain) | Store port (in `application/port/out`) | Persistence |
 |---|---|---|---|
-| note | `Note` (JPA entity), `NoteKind` | `NoteStore` | `NoteJpaRepository` wrapped by `NoteStoreAdapter` |
-| layout | `BaselineLayout` (JPA entity, `@Version`-style `version` field kept) | `LayoutStore` (`getSingleton`, `saveAndFlush`) | `BaselineLayoutJpaRepository` + adapter |
-| workspace | `WorkspaceState` (JPA entity) | `WorkspaceStateStore` (`find`, `lockSingleton`) | `WorkspaceStateJpaRepository` + adapter |
+| note | `Note` (`create`, `restore`, `change`, text rule) | `NoteStore` (`findAllOldestFirst`, `findById`, `save`, `delete`) | `NoteEntity`, `NoteMapper`, `NoteJpaRepository`, `NoteStoreAdapter` — done |
+| layout | `BaselineLayout` (positions, collapsed cards, `version`) | `LayoutStore` (`getSingleton`, `save` returning the new version) | `BaselineLayoutEntity` keeps the optimistic `version` column; the adapter must return the version Hibernate assigned |
+| workspace | `WorkspaceState` (revision) | `WorkspaceStateStore` (`current`, `lockAndIncrement`, `lockAndGet`) | `WorkspaceStateEntity`, repository with the pessimistic lock query |
 
 ## Read records crossing module boundaries
 
