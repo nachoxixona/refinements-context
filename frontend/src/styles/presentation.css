@@ -1,0 +1,15 @@
+/* FR-040 presentation mode: larger text, badges and strokes so a 1080p screen share stays legible. */
+.app.presentation {
+  --font-size: 16px;
+  --node-font: 15px;
+  --badge-font: 13px;
+  --edge-width: 2.6px;
+}
+.app.presentation .card-node, .app.presentation .microservice-node { border-width: 2px; max-width: 440px; }
+.app.presentation .method-badge { min-width: 56px; padding: 2px 6px; }
+.app.presentation .edge-label { font-size: 14px; }
+.app.presentation .legend { font-size: 14px; }
+.app.presentation .hl-upstream { box-shadow: 0 0 0 5px var(--c-upstream); }
+.app.presentation .hl-downstream { box-shadow: 0 0 0 5px var(--c-downstream); }
+.app.presentation .hl-search { box-shadow: 0 0 0 5px var(--c-search); }
+.app.presentation .hl-selected { box-shadow: 0 0 0 5px #111827; }

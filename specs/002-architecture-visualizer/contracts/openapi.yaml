@@ -1,0 +1,749 @@
+openapi: 3.1.0
+info:
+  title: Architecture Visualizer API
+  version: 1.0.0
+  description: >
+    Backend API for the Microservice Architecture & Scenario Visualizer
+    (spec: specs/002-architecture-visualizer/spec.md). Graph DTOs are shaped for direct
+    consumption by React Flow (@xyflow/react). Errors use RFC 9457 Problem Details.
+servers:
+  - url: /api
+tags:
+  - name: services
+  - name: graph
+  - name: edges
+  - name: layout
+  - name: settings
+  - name: scenarios
+
+paths:
+  /services:
+    get:
+      tags: [services]
+      summary: List registered services
+      operationId: listServices
+      responses:
+        '200':
+          description: Services, sorted by displayName
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ServiceSummary' }
+    post:
+      tags: [services]
+      summary: Register a service from pasted spec text or a URL (FR-001, FR-002)
+      operationId: registerService
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterServiceRequest' }
+      responses:
+        '201':
+          description: New service registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ServiceSummary' }
+        '200':
+          description: Existing service updated (mode=UPDATE) or content unchanged
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ServiceSummary' }
+        '409':
+          description: A service with the derived serviceKey exists and no mode was given
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/DuplicateServiceProblem' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '422': { $ref: '#/components/responses/SpecInvalid' }
+        '502': { $ref: '#/components/responses/FetchFailed' }
+
+  /services/{serviceKey}:
+    parameters:
+      - $ref: '#/components/parameters/ServiceKey'
+    delete:
+      tags: [services]
+      summary: Remove a service (FR-009). Its overrides are kept and become orphaned.
+      operationId: deleteService
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /services/{serviceKey}/sync:
+    parameters:
+      - $ref: '#/components/parameters/ServiceKey'
+    post:
+      tags: [services]
+      summary: Re-sync a service (FR-006, FR-007)
+      description: >
+        For URL services, re-fetches the URL (body optional). For pasted services, the body
+        MUST include new `content`. On failure the last good version is kept and the errors
+        are stored on the service.
+      operationId: syncService
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content: { type: string, description: Raw JSON or YAML spec text }
+      responses:
+        '200':
+          description: Synced (or unchanged when the content hash is identical)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ServiceSummary' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '422': { $ref: '#/components/responses/SpecInvalid' }
+        '502': { $ref: '#/components/responses/FetchFailed' }
+
+  /graph:
+    get:
+      tags: [graph]
+      summary: Baseline graph as React Flow nodes and merged inferred and override edges
+      operationId: getGraph
+      responses:
+        '200':
+          description: Graph
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GraphResponse' }
+
+  /edges/override:
+    post:
+      tags: [edges]
+      summary: Confirm, dismiss, restore, draw or delete a connection (FR-019 to FR-022)
+      operationId: overrideEdge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EdgeOverrideRequest' }
+      responses:
+        '200':
+          description: Override applied. Returns the resulting override, or null when removed.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/EdgeOverride'
+                  - type: 'null'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: The edge is not currently inferred (CONFIRM/DISMISS) or already exists (MANUAL)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+  /edges/overrides:
+    get:
+      tags: [edges]
+      summary: List overrides, for example dismissed edges to restore
+      operationId: listOverrides
+      parameters:
+        - name: kind
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/OverrideKind' }
+      responses:
+        '200':
+          description: Overrides
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/EdgeOverride' }
+
+  /layout:
+    put:
+      tags: [layout]
+      summary: Save baseline node positions (FR-014)
+      operationId: saveLayout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LayoutUpdate' }
+      responses:
+        '200':
+          description: Saved
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version]
+                properties:
+                  version: { type: integer }
+        '409': { $ref: '#/components/responses/StaleVersion' }
+
+  /settings/inference:
+    get:
+      tags: [settings]
+      summary: Get inference settings (generic field list and related values)
+      operationId: getInferenceSettings
+      responses:
+        '200':
+          description: Settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InferenceSettings' }
+    put:
+      tags: [settings]
+      summary: Update inference settings (FR-016). Triggers recomputation of inferred edges.
+      operationId: updateInferenceSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InferenceSettings' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InferenceSettings' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /scenarios:
+    get:
+      tags: [scenarios]
+      summary: List saved scenarios
+      operationId: listScenarios
+      responses:
+        '200':
+          description: Scenarios (no content), newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ScenarioSummary' }
+    post:
+      tags: [scenarios]
+      summary: Save a new scenario (FR-034)
+      operationId: createScenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScenarioWrite' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Scenario' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: Name already in use
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+  /scenarios/import:
+    post:
+      tags: [scenarios]
+      summary: Import an exported scenario document (FR-035)
+      operationId: importScenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScenarioDocument' }
+      responses:
+        '201':
+          description: Imported as a new scenario (name suffixed on clash)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Scenario' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /scenarios/{scenarioId}:
+    parameters:
+      - $ref: '#/components/parameters/ScenarioId'
+    get:
+      tags: [scenarios]
+      summary: Open a scenario, including orphan flags (FR-038)
+      operationId: getScenario
+      responses:
+        '200':
+          description: Scenario
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Scenario' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [scenarios]
+      summary: Update (rename or change content) with optimistic locking
+      operationId: updateScenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ScenarioWrite'
+                - type: object
+                  required: [version]
+                  properties:
+                    version: { type: integer }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Scenario' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StaleVersion' }
+    delete:
+      tags: [scenarios]
+      summary: Delete a scenario
+      operationId: deleteScenario
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /scenarios/{scenarioId}/export:
+    parameters:
+      - $ref: '#/components/parameters/ScenarioId'
+    get:
+      tags: [scenarios]
+      summary: Export a saved scenario as a JSON document (FR-035)
+      operationId: exportScenario
+      responses:
+        '200':
+          description: Scenario document
+          headers:
+            Content-Disposition:
+              schema: { type: string }
+              description: attachment; filename="<name>.scenario.json"
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScenarioDocument' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  parameters:
+    ServiceKey:
+      name: serviceKey
+      in: path
+      required: true
+      schema: { type: string, examples: ['order-service'] }
+    ScenarioId:
+      name: scenarioId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    BadRequest:
+      description: Validation failed
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Not found
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    TooLarge:
+      description: Spec exceeds the 10 MB limit (FR-008)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    SpecInvalid:
+      description: Spec is not valid OpenAPI/Swagger or has unresolved references (FR-005)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/SpecProblem' }
+    FetchFailed:
+      description: URL unreachable, timed out, needs credentials, or returned a non-spec
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    StaleVersion:
+      description: Content changed since it was loaded (optimistic lock)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+  schemas:
+    # ---------- errors ----------
+    Problem:
+      type: object
+      description: RFC 9457 Problem Details
+      required: [type, title, status]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+    ParseError:
+      type: object
+      required: [message]
+      properties:
+        location: { type: [string, 'null'], examples: ["paths./orders.get.responses"] }
+        message: { type: string }
+    SpecProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [errors]
+          properties:
+            errors:
+              type: array
+              items: { $ref: '#/components/schemas/ParseError' }
+    DuplicateServiceProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [conflict, existingServiceKey]
+          properties:
+            conflict: { const: DUPLICATE_SERVICE }
+            existingServiceKey: { type: string }
+
+    # ---------- services ----------
+    RegisterServiceRequest:
+      type: object
+      required: [sourceType]
+      properties:
+        sourceType: { enum: [PASTE, URL] }
+        content:
+          type: string
+          description: Raw JSON or YAML. Required when sourceType=PASTE.
+        url:
+          type: string
+          format: uri
+          description: http(s) URL. Required when sourceType=URL.
+        mode:
+          enum: [UPDATE, NEW]
+          description: How to resolve a serviceKey clash. Omit on the first attempt.
+    ServiceSummary:
+      type: object
+      required: [serviceKey, displayName, specFormat, sourceType, endpointCount, lastSyncStatus, lastSyncAt]
+      properties:
+        serviceKey: { type: string }
+        displayName: { type: string }
+        apiVersion: { type: [string, 'null'] }
+        specFormat: { enum: [SWAGGER_2_0, OPENAPI_3_0, OPENAPI_3_1] }
+        sourceType: { enum: [PASTE, URL] }
+        sourceUrl: { type: [string, 'null'] }
+        endpointCount: { type: integer }
+        lastSyncStatus: { enum: [OK, FAILED] }
+        lastSyncAt: { type: string, format: date-time }
+        lastSyncErrors:
+          type: array
+          items: { $ref: '#/components/schemas/ParseError' }
+        unchanged:
+          type: boolean
+          description: True when a sync found identical content (no-op)
+
+    HttpMethod:
+      enum: [GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS, TRACE]
+    Field:
+      type: object
+      required: [path, name, normalizedName, type, location, required]
+      properties:
+        path: { type: string, examples: ['order.customerId'] }
+        name: { type: string, examples: ['customerId'] }
+        normalizedName: { type: string, examples: ['customerid'] }
+        type: { type: string }
+        format: { type: [string, 'null'] }
+        location: { enum: [PATH, QUERY, HEADER, BODY, RESPONSE] }
+        required: { type: boolean }
+        variant: { type: [integer, 'null'] }
+        truncated: { type: boolean }
+    Endpoint:
+      type: object
+      required: [endpointKey, method, path, inputs, outputs]
+      properties:
+        endpointKey: { type: string, examples: ['order-service:GET /orders/{}'] }
+        method: { $ref: '#/components/schemas/HttpMethod' }
+        path: { type: string, examples: ['/orders/{orderId}'] }
+        operationId: { type: [string, 'null'] }
+        summary: { type: [string, 'null'] }
+        inputs:
+          type: array
+          items: { $ref: '#/components/schemas/Field' }
+        outputs:
+          type: array
+          items: { $ref: '#/components/schemas/Field' }
+
+    # ---------- graph (React Flow shapes) ----------
+    XYPosition:
+      type: object
+      required: [x, y]
+      properties:
+        x: { type: number }
+        y: { type: number }
+    ServiceNodeData:
+      type: object
+      required: [serviceKey, displayName, endpoints, lastSyncStatus, sourceType, specFormat, contentHash, lastSyncAt]
+      properties:
+        serviceKey: { type: string }
+        displayName: { type: string }
+        apiVersion: { type: [string, 'null'] }
+        sourceType: { enum: [PASTE, URL] }
+        sourceUrl: { type: [string, 'null'] }
+        specFormat: { enum: [SWAGGER_2_0, OPENAPI_3_0, OPENAPI_3_1] }
+        contentHash:
+          type: string
+          description: Identifies the spec upload this node, its endpoints and fields were derived from
+        lastSyncAt: { type: string, format: date-time }
+        lastSyncStatus: { enum: [OK, FAILED] }
+        endpoints:
+          type: array
+          items: { $ref: '#/components/schemas/Endpoint' }
+    GraphNode:
+      type: object
+      description: React Flow Node. Handles are `in:{endpointKey}`, `out:{endpointKey}`, `in:service` and `out:service`.
+      required: [id, type, position, data]
+      properties:
+        id: { type: string, description: serviceKey }
+        type: { const: service }
+        position:
+          oneOf:
+            - $ref: '#/components/schemas/XYPosition'
+            - type: 'null'
+          description: null when never positioned; the client places it (research R11)
+        data: { $ref: '#/components/schemas/ServiceNodeData' }
+    FieldMatch:
+      type: object
+      required: [outputPath, inputPath, inputLocation, score]
+      properties:
+        outputPath: { type: string }
+        inputPath: { type: string }
+        inputLocation: { enum: [PATH, QUERY, HEADER, BODY] }
+        score: { type: number, minimum: 0, maximum: 1 }
+    EdgeData:
+      type: object
+      required: [origin, orphaned]
+      properties:
+        origin: { enum: [inferred, verified] }
+        overrideKind:
+          oneOf:
+            - $ref: '#/components/schemas/OverrideKind'
+            - type: 'null'
+        confidence: { type: [number, 'null'], minimum: 0, maximum: 1 }
+        matches:
+          type: array
+          items: { $ref: '#/components/schemas/FieldMatch' }
+        hiddenCandidates: { type: integer, minimum: 0 }
+        orphaned: { type: boolean }
+        sourceEndpointKey: { type: [string, 'null'] }
+        targetEndpointKey: { type: [string, 'null'] }
+    GraphEdge:
+      type: object
+      description: React Flow Edge. `type` selects the custom edge component.
+      required: [id, source, target, type, data]
+      properties:
+        id: { type: string, description: edgeKey }
+        source: { type: string, description: source serviceKey }
+        target: { type: string, description: target serviceKey }
+        sourceHandle: { type: [string, 'null'] }
+        targetHandle: { type: [string, 'null'] }
+        type: { enum: [inferred, verified] }
+        data: { $ref: '#/components/schemas/EdgeData' }
+    GraphResponse:
+      type: object
+      required: [nodes, edges, layoutVersion, generation]
+      properties:
+        nodes:
+          type: array
+          items: { $ref: '#/components/schemas/GraphNode' }
+        edges:
+          type: array
+          items: { $ref: '#/components/schemas/GraphEdge' }
+        layoutVersion: { type: integer, description: Pass back on PUT /layout }
+        generation: { type: integer, description: Increases on every graph-affecting write }
+
+    # ---------- edges ----------
+    OverrideKind:
+      enum: [CONFIRMED, DISMISSED, MANUAL]
+    EdgeOverrideRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          enum: [CONFIRM, DISMISS, RESTORE, CREATE_MANUAL, DELETE]
+          description: >
+            CONFIRM/DISMISS need edgeKey of a currently inferred edge. RESTORE deletes a
+            DISMISSED override. CREATE_MANUAL needs source/target (and optional endpoint keys).
+            DELETE removes a MANUAL edge or turns a CONFIRMED edge into DISMISSED.
+        edgeKey: { type: string }
+        sourceServiceKey: { type: string }
+        targetServiceKey: { type: string }
+        sourceEndpointKey: { type: [string, 'null'] }
+        targetEndpointKey: { type: [string, 'null'] }
+        note: { type: string, maxLength: 500 }
+    EdgeOverride:
+      type: object
+      required: [edgeKey, kind, sourceServiceKey, targetServiceKey, createdAt, updatedAt, orphaned]
+      properties:
+        edgeKey: { type: string }
+        kind: { $ref: '#/components/schemas/OverrideKind' }
+        sourceServiceKey: { type: string }
+        targetServiceKey: { type: string }
+        sourceEndpointKey: { type: [string, 'null'] }
+        targetEndpointKey: { type: [string, 'null'] }
+        snapshotMatches:
+          type: array
+          items: { $ref: '#/components/schemas/FieldMatch' }
+        note: { type: [string, 'null'] }
+        orphaned: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    # ---------- layout & settings ----------
+    LayoutUpdate:
+      type: object
+      required: [version, positions]
+      properties:
+        version: { type: integer }
+        positions:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/XYPosition' }
+          description: serviceKey → position. Replaces the whole stored map.
+    InferenceSettings:
+      type: object
+      required: [genericFields, maxTargetsPerField, minConfidence]
+      properties:
+        genericFields:
+          type: array
+          items: { type: string }
+          examples: [[id, status, timestamp, message, createdAt, updatedAt, error, code]]
+        maxTargetsPerField: { type: integer, minimum: 1, maximum: 50, default: 5 }
+        minConfidence: { type: number, minimum: 0, maximum: 1, default: 0.4 }
+        updatedAt: { type: string, format: date-time, readOnly: true }
+
+    # ---------- scenarios ----------
+    SimpleField:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        type: { type: string }
+    ProposedEndpoint:
+      type: object
+      required: [method, path]
+      properties:
+        method: { $ref: '#/components/schemas/HttpMethod' }
+        path: { type: string }
+        inputs:
+          type: array
+          items: { $ref: '#/components/schemas/SimpleField' }
+        outputs:
+          type: array
+          items: { $ref: '#/components/schemas/SimpleField' }
+    ProposedService:
+      type: object
+      required: [tempKey, name, endpoints]
+      properties:
+        tempKey: { type: string, pattern: '^proposed:', examples: ['proposed:loyalty-service'] }
+        name: { type: string }
+        endpoints:
+          type: array
+          items: { $ref: '#/components/schemas/ProposedEndpoint' }
+    ProposedEdge:
+      type: object
+      required: [id, source, target]
+      properties:
+        id: { type: string }
+        source: { type: string, description: baseline serviceKey or proposed tempKey }
+        target: { type: string }
+        sourceHandle: { type: [string, 'null'] }
+        targetHandle: { type: [string, 'null'] }
+        label: { type: [string, 'null'] }
+    ScenarioContent:
+      type: object
+      required: [proposedServices, addedEndpoints, proposedEdges, positions]
+      properties:
+        proposedServices:
+          type: array
+          items: { $ref: '#/components/schemas/ProposedService' }
+        addedEndpoints:
+          type: array
+          items:
+            type: object
+            required: [serviceKey, endpoint]
+            properties:
+              serviceKey: { type: string }
+              endpoint: { $ref: '#/components/schemas/ProposedEndpoint' }
+        addedFields:
+          type: array
+          description: >
+            Proposed fields on existing baseline endpoints. Optional (defaults to empty) so documents
+            exported before this property existed still import.
+          items: { $ref: '#/components/schemas/AddedField' }
+        proposedEdges:
+          type: array
+          items: { $ref: '#/components/schemas/ProposedEdge' }
+        positions:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/XYPosition' }
+    AddedField:
+      type: object
+      description: A proposed request (IN) or response (OUT) field on a baseline endpoint
+      required: [serviceKey, endpointKey, direction, field]
+      properties:
+        serviceKey: { type: string }
+        endpointKey: { type: string, examples: ['order-service:GET /orders/{}'] }
+        direction: { enum: [IN, OUT] }
+        field: { $ref: '#/components/schemas/SimpleField' }
+    ScenarioWrite:
+      type: object
+      required: [name, content]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: [string, 'null'], maxLength: 2000 }
+        content: { $ref: '#/components/schemas/ScenarioContent' }
+    ScenarioSummary:
+      type: object
+      required: [id, name, version, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    Orphan:
+      type: object
+      required: [ref, usedBy]
+      properties:
+        ref: { type: string, description: missing baseline serviceKey or endpointKey }
+        usedBy:
+          type: array
+          items: { type: string, description: proposed edge id or added-endpoint reference }
+    Scenario:
+      allOf:
+        - $ref: '#/components/schemas/ScenarioSummary'
+        - type: object
+          required: [content, orphans, baselineDrift]
+          properties:
+            content: { $ref: '#/components/schemas/ScenarioContent' }
+            orphans:
+              type: array
+              items: { $ref: '#/components/schemas/Orphan' }
+            baselineDrift:
+              type: array
+              items: { type: string }
+              description: serviceKeys whose spec changed since the scenario was saved
+    ScenarioDocument:
+      type: object
+      description: Portable export format (FR-035)
+      required: [formatVersion, name, content, exportedAt]
+      properties:
+        formatVersion: { const: 1 }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        exportedAt: { type: string, format: date-time }
+        baselineRef:
+          type: object
+          additionalProperties: { type: string }
+          description: serviceKey → contentHash at export time
+        content: { $ref: '#/components/schemas/ScenarioContent' }

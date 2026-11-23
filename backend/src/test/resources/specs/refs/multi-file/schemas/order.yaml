@@ -1,0 +1,14 @@
+Order:
+  type: object
+  properties:
+    orderId: { type: string }
+    customer:
+      $ref: './common.json#/Customer'
+    lines:
+      type: array
+      items:
+        $ref: '#/Line'
+Line:
+  type: object
+  properties:
+    sku: { type: string }

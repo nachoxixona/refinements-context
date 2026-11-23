@@ -1,0 +1,35 @@
+# Whole app:            docker compose up -d --build     → http://localhost:8080
+# Database only (dev):  docker compose up -d db          → then run the backend and `npm run dev` locally
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: visualizer
+      POSTGRES_USER: visualizer
+      POSTGRES_PASSWORD: visualizer
+    ports:
+      - "${DB_PORT:-5433}:5432" # 5433 on the host, so it does not clash with a locally installed PostgreSQL
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U visualizer -d visualizer"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/visualizer
+      SPRING_DATASOURCE_USERNAME: visualizer
+      SPRING_DATASOURCE_PASSWORD: visualizer
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    restart: unless-stopped
+
+volumes:
+  db-data:

@@ -1,0 +1,41 @@
+{
+  "swagger": "2.0",
+  "info": { "title": "Payment Service", "version": "1.0.0" },
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/payments": {
+      "post": {
+        "operationId": "createPayment",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["orderId", "amount"],
+              "properties": {
+                "orderId": { "type": "string", "format": "uuid" },
+                "amount": { "type": "number" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Payment created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "paymentId": { "type": "string" },
+                "status": { "type": "string" },
+                "amount": { "type": "number" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

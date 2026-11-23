@@ -1,0 +1,1292 @@
+openapi: 3.1.0
+info:
+  title: Architecture Visualizer API
+  version: 2.0.0
+  description: >
+    Backend API for the Microservice Architecture & Scenario Visualizer, declared-connections model
+    (spec: specs/003-declared-connections/spec.md). Replaces the 1.x contract of feature 002:
+    /services, /graph, /edges/* and /settings/inference are removed. Canvas DTOs are shaped for
+    direct consumption by React Connection (@xyflow/react). Errors use RFC 9457 Problem Details.
+servers:
+  - url: /api
+tags:
+  - name: cards
+  - name: microservices
+  - name: connections
+  - name: flows
+  - name: connections-document
+  - name: canvas
+  - name: layout
+  - name: scenarios
+  - name: migration
+
+paths:
+  # ---------------------------------------------------------------- cards
+  /cards:
+    get:
+      tags: [cards]
+      summary: List spec cards
+      operationId: listCards
+      responses:
+        '200':
+          description: Cards, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SpecCardSummary' }
+    post:
+      tags: [cards]
+      summary: Import a spec as an unlinked card from pasted text or a URL (FR-001, FR-002). Never creates connections (FR-007).
+      operationId: importCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ImportCardRequest' }
+      responses:
+        '201':
+          description: Card created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SpecCardSummary' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: Same content or same URL already imported (FR-006)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/DuplicateCardProblem' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '422': { $ref: '#/components/responses/SpecInvalid' }
+        '502': { $ref: '#/components/responses/FetchFailed' }
+  /cards/{cardId}:
+    parameters:
+      - $ref: '#/components/parameters/CardId'
+    delete:
+      tags: [cards]
+      summary: Delete a card (FR-008). Its microservice becomes spec-less; connections are untouched.
+      operationId: deleteCard
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /cards/{cardId}/sync:
+    parameters:
+      - $ref: '#/components/parameters/CardId'
+    post:
+      tags: [cards]
+      summary: Re-sync a card in place (FR-004). Keeps id, link and position. URL cards are re-fetched; pasted cards send their new content.
+      operationId: syncCard
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content: { type: string, description: New spec text. Required for pasted cards. }
+      responses:
+        '200':
+          description: Synced (or unchanged)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SpecCardSummary' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/SpecInvalid' }
+        '502': { $ref: '#/components/responses/FetchFailed' }
+
+  # -------------------------------------------------------- microservices
+  /microservices:
+    post:
+      tags: [microservices]
+      summary: Create a microservice (FR-010). Re-attaches dangling connections with the same name.
+      operationId: createMicroservice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MicroserviceWrite' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MicroserviceMutation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /microservices/{microserviceId}:
+    parameters:
+      - $ref: '#/components/parameters/MicroserviceId'
+    patch:
+      tags: [microservices]
+      summary: Rename or describe a microservice (FR-010, FR-028). Rename cascades to its connections.
+      operationId: updateMicroservice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MicroservicePatch' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MicroserviceMutation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [microservices]
+      summary: Delete a microservice (FR-016). Its connections become dangling; its card becomes unlinked.
+      operationId: deleteMicroservice
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [danglingConnectionIds, revision]
+                properties:
+                  danglingConnectionIds:
+                    type: array
+                    items: { type: string, format: uuid }
+                  revision: { type: integer, format: int64 }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /microservices/{microserviceId}/card:
+    parameters:
+      - $ref: '#/components/parameters/MicroserviceId'
+    put:
+      tags: [microservices]
+      summary: Link a card to the microservice (FR-012, FR-013)
+      operationId: linkCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cardId]
+              properties:
+                cardId: { type: string, format: uuid }
+                replace:
+                  type: boolean
+                  default: false
+                  description: Replace the microservice's current card (which becomes unlinked)
+      responses:
+        '204': { description: Linked }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: MICROSERVICE_HAS_CARD (retry with replace=true) or CARD_ALREADY_LINKED
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ConflictProblem' }
+    delete:
+      tags: [microservices]
+      summary: Unlink the microservice's card (FR-012)
+      operationId: unlinkCard
+      responses:
+        '204': { description: Unlinked }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------------------------------------------------------------- connections
+  /connections:
+    post:
+      tags: [connections]
+      summary: Create a connection drawn on the canvas (FR-024)
+      operationId: createConnection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConnectionCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConnectionMutation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /connections/{connectionId}:
+    parameters:
+      - $ref: '#/components/parameters/ConnectionId'
+    patch:
+      tags: [connections]
+      summary: Rename a connection or change its kind or description (FR-018a)
+      operationId: updateConnection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConnectionPatch' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConnectionMutation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [connections]
+      summary: Delete one connection (FR-024, FR-027)
+      operationId: deleteConnection
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /connections/{connectionId}/reassign:
+    parameters:
+      - $ref: '#/components/parameters/ConnectionId'
+    post:
+      tags: [connections]
+      summary: Point a dangling connection end at an existing microservice (FR-027)
+      operationId: reassignConnection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                sourceId: { type: string, format: uuid }
+                targetId: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Reassigned
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConnectionMutation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  # ---------------------------------------------------------- flows
+  /flows:
+    post:
+      tags: [flows]
+      summary: Create a flow, a named color connections can belong to (FR-049)
+      operationId: createFlow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FlowWrite' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FlowMutation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /flows/{flowId}:
+    parameters:
+      - name: flowId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [flows]
+      summary: Rename or recolor a flow (FR-049)
+      operationId: updateFlow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FlowPatch' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FlowMutation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [flows]
+      summary: Delete a flow; its connections stay, ungrouped (FR-050)
+      operationId: deleteFlow
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ------------------------------------------------------- connections document
+  /connections-document:
+    get:
+      tags: [connections-document]
+      summary: Export the current connections document (FR-025). Deterministic order.
+      operationId: exportConnectionsDocument
+      responses:
+        '200':
+          description: Current document
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConnectionsDocumentExport' }
+    put:
+      tags: [connections-document]
+      summary: Validate and apply a document, replacing all baseline connections (FR-020 – FR-023)
+      operationId: applyConnectionsDocument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConnectionsDocumentSubmit' }
+      responses:
+        '200':
+          description: Applied
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConnectionsDocumentApplied' }
+        '409': { $ref: '#/components/responses/StaleRevision' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '422': { $ref: '#/components/responses/ConnectionsDocumentInvalid' }
+  /connections-document/preview:
+    post:
+      tags: [connections-document]
+      summary: Validate a document and return the changes it would make, without applying (FR-020)
+      operationId: previewConnectionsDocument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConnectionsDocumentSubmit' }
+      responses:
+        '200':
+          description: Valid; changes listed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConnectionsDocumentPreview' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '422': { $ref: '#/components/responses/ConnectionsDocumentInvalid' }
+
+  # --------------------------------------------------------------- canvas
+  /canvas:
+    get:
+      tags: [canvas]
+      summary: Baseline canvas as React Connection nodes and edges, plus dangling connections
+      operationId: getCanvas
+      responses:
+        '200':
+          description: Canvas
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CanvasResponse' }
+
+  /layout:
+    put:
+      tags: [layout]
+      summary: Save positions and collapsed cards (FR-014, FR-035)
+      operationId: saveLayout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LayoutUpdate' }
+      responses:
+        '200':
+          description: Saved
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version]
+                properties:
+                  version: { type: integer }
+        '409': { $ref: '#/components/responses/StaleRevision' }
+
+  # ------------------------------------------------------------ scenarios
+  /scenarios:
+    get:
+      tags: [scenarios]
+      summary: List saved scenarios (FR-040)
+      operationId: listScenarios
+      responses:
+        '200':
+          description: Scenarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ScenarioSummary' }
+    post:
+      tags: [scenarios]
+      summary: Save a new scenario (FR-040)
+      operationId: createScenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScenarioWrite' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Scenario' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /scenarios/import:
+    post:
+      tags: [scenarios]
+      summary: Import an exported scenario document, formatVersion 3, or 2 and 1 from earlier versions (FR-041)
+      operationId: importScenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScenarioDocumentAny' }
+      responses:
+        '201':
+          description: Imported
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScenarioImported' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /scenarios/{scenarioId}:
+    parameters:
+      - $ref: '#/components/parameters/ScenarioId'
+    get:
+      tags: [scenarios]
+      summary: Open a scenario, with orphan flags (FR-042)
+      operationId: getScenario
+      responses:
+        '200':
+          description: Scenario
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Scenario' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [scenarios]
+      summary: Rename or change content, with optimistic locking
+      operationId: updateScenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ScenarioWrite'
+                - type: object
+                  required: [version]
+                  properties:
+                    version: { type: integer }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Scenario' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StaleRevision' }
+    delete:
+      tags: [scenarios]
+      summary: Delete a scenario
+      operationId: deleteScenario
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /scenarios/{scenarioId}/export:
+    parameters:
+      - $ref: '#/components/parameters/ScenarioId'
+    get:
+      tags: [scenarios]
+      summary: Export a scenario as a JSON document, formatVersion 3 (FR-041)
+      operationId: exportScenario
+      responses:
+        '200':
+          description: Document
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScenarioDocument' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ------------------------------------------------------------ migration
+  /migration-report:
+    get:
+      tags: [migration]
+      summary: Summary of the one-time migration from 002 (FR-047). 404 if no migration ran.
+      operationId: getMigrationReport
+      responses:
+        '200':
+          description: Report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MigrationReport' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /migration-report/acknowledge:
+    post:
+      tags: [migration]
+      summary: Mark the migration summary as seen
+      operationId: acknowledgeMigrationReport
+      responses:
+        '204': { description: Acknowledged }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  parameters:
+    CardId:
+      name: cardId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    MicroserviceId:
+      name: microserviceId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ConnectionId:
+      name: connectionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ScenarioId:
+      name: scenarioId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    BadRequest:
+      description: Validation failed
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Not found
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: Uniqueness or linking rule violated
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ConflictProblem' }
+    TooLarge:
+      description: Body exceeds the size limit (spec 10 MB, connections document 2 MB)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    SpecInvalid:
+      description: Not valid OpenAPI/Swagger or unresolved references (FR-005)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/SpecProblem' }
+    FetchFailed:
+      description: URL unreachable, timed out, needs credentials, or returned a non-spec
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    StaleRevision:
+      description: Data changed since it was loaded (optimistic lock / workspace revision)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    ConnectionsDocumentInvalid:
+      description: The document has one or more errors; nothing was applied (FR-023)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ConnectionsDocumentProblem' }
+
+  schemas:
+    # ---------- errors ----------
+    Problem:
+      type: object
+      description: RFC 9457 Problem Details
+      required: [type, title, status]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+    ConflictProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [conflict]
+          properties:
+            conflict:
+              enum: [DUPLICATE_NAME, DUPLICATE_CONNECTION, SELF_CONNECTION, MICROSERVICE_HAS_CARD, CARD_ALREADY_LINKED, DUPLICATE_SCENARIO_NAME]
+    ParseError:
+      type: object
+      required: [message]
+      properties:
+        location: { type: [string, 'null'], examples: ['paths./orders.get.responses'] }
+        message: { type: string }
+    SpecProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [errors]
+          properties:
+            errors:
+              type: array
+              items: { $ref: '#/components/schemas/ParseError' }
+    DuplicateCardProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [conflict, existingCardId]
+          properties:
+            conflict: { const: DUPLICATE_CARD }
+            existingCardId: { type: string, format: uuid }
+    DocumentError:
+      type: object
+      description: One connections-document error with its position (research R6)
+      required: [kind, message]
+      properties:
+        kind:
+          enum: [SYNTAX, UNSUPPORTED_VERSION, WRONG_TYPE, MISSING, TOO_LONG, INVALID_KIND, SELF_CONNECTION, DUPLICATE_CONNECTION, DUPLICATE_MICROSERVICE, UNKNOWN_PROPERTY, TOO_MANY, UNKNOWN_FLOW, INVALID_COLOR, DUPLICATE_FLOW, INVALID_ENDPOINT]
+        pointer: { type: [string, 'null'], examples: ['/connections/3/target'] }
+        path: { type: [string, 'null'], examples: ['connections[3].target'] }
+        line: { type: [integer, 'null'], minimum: 1 }
+        column: { type: [integer, 'null'], minimum: 1 }
+        message: { type: string, examples: ['connections[3].target is missing'] }
+    ConnectionsDocumentProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [errors]
+          properties:
+            errors:
+              type: array
+              items: { $ref: '#/components/schemas/DocumentError' }
+
+    # ---------- cards ----------
+    ImportCardRequest:
+      type: object
+      required: [sourceType]
+      properties:
+        sourceType: { enum: [PASTE, URL] }
+        content: { type: string, description: Raw JSON or YAML. Required when sourceType=PASTE. }
+        url: { type: string, format: uri, description: http(s) URL. Required when sourceType=URL. }
+    SpecFormat:
+      enum: [SWAGGER_2_0, OPENAPI_3_0, OPENAPI_3_1]
+    SpecCardSummary:
+      type: object
+      required: [id, title, specFormat, sourceType, contentHash, endpointCount, lastSyncStatus, lastSyncAt]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        apiVersion: { type: [string, 'null'] }
+        specFormat: { $ref: '#/components/schemas/SpecFormat' }
+        sourceType: { enum: [PASTE, URL] }
+        sourceUrl: { type: [string, 'null'] }
+        contentHash: { type: string }
+        endpointCount: { type: integer }
+        lastSyncStatus: { enum: [OK, FAILED] }
+        lastSyncAt: { type: string, format: date-time }
+        lastSyncErrors:
+          type: array
+          items: { $ref: '#/components/schemas/ParseError' }
+        unchanged: { type: boolean, description: True when a sync found identical content }
+        linkedMicroserviceId: { type: [string, 'null'], format: uuid }
+    HttpMethod:
+      enum: [GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS, TRACE]
+    Field:
+      type: object
+      required: [path, name, normalizedName, type, location, required]
+      properties:
+        path: { type: string, examples: ['order.customerId'] }
+        name: { type: string }
+        normalizedName: { type: string }
+        type: { type: string }
+        format: { type: [string, 'null'] }
+        location: { enum: [PATH, QUERY, HEADER, BODY, RESPONSE] }
+        required: { type: boolean }
+        variant: { type: [integer, 'null'] }
+        truncated: { type: boolean }
+    Endpoint:
+      type: object
+      required: [endpointKey, method, path, inputs, outputs]
+      properties:
+        endpointKey: { type: string, examples: ['5b1c…:GET /orders/{}'] }
+        method: { $ref: '#/components/schemas/HttpMethod' }
+        path: { type: string }
+        operationId: { type: [string, 'null'] }
+        summary: { type: [string, 'null'] }
+        inputs:
+          type: array
+          items: { $ref: '#/components/schemas/Field' }
+        outputs:
+          type: array
+          items: { $ref: '#/components/schemas/Field' }
+
+    # ---------- microservices ----------
+    MicroserviceWrite:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: [string, 'null'], maxLength: 2000 }
+    MicroservicePatch:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: [string, 'null'], maxLength: 2000 }
+    Microservice:
+      type: object
+      required: [id, name, specCardId]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        specCardId: { type: [string, 'null'], format: uuid }
+    MicroserviceMutation:
+      type: object
+      required: [microservice, reattachedConnectionIds, revision]
+      properties:
+        microservice: { $ref: '#/components/schemas/Microservice' }
+        reattachedConnectionIds:
+          type: array
+          description: Dangling connections re-attached because their name matched (research R2)
+          items: { type: string, format: uuid }
+        revision: { type: integer, format: int64 }
+
+    # ---------- connections ----------
+    ConnectionKind:
+      enum: [REQUEST, EVENT]
+    FlowColor:
+      enum: [BLUE, PURPLE, ORANGE, PINK, AMBER, BROWN, CYAN, SLATE]
+      description: Fixed palette without green and red, which mark proposed and removed elements (FR-049)
+    Flow:
+      type: object
+      required: [id, name, color]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        color: { $ref: '#/components/schemas/FlowColor' }
+    FlowWrite:
+      type: object
+      required: [name, color]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        color: { $ref: '#/components/schemas/FlowColor' }
+    FlowPatch:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        color: { $ref: '#/components/schemas/FlowColor' }
+    FlowMutation:
+      type: object
+      required: [flow, revision]
+      properties:
+        flow: { $ref: '#/components/schemas/Flow' }
+        revision: { type: integer, format: int64 }
+    ConnectionCreate:
+      type: object
+      required: [sourceId, targetId, name]
+      properties:
+        sourceId: { type: string, format: uuid }
+        targetId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        kind:
+          oneOf:
+            - $ref: '#/components/schemas/ConnectionKind'
+            - type: 'null'
+        description: { type: [string, 'null'], maxLength: 2000 }
+        flowId: { type: [string, 'null'], format: uuid }
+        endpoint: { type: [string, 'null'], maxLength: 600, examples: ['POST /invoices'], description: 'METHOD /path of an endpoint on the target (FR-054)' }
+    ConnectionPatch:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        kind:
+          oneOf:
+            - $ref: '#/components/schemas/ConnectionKind'
+            - type: 'null'
+        description: { type: [string, 'null'], maxLength: 2000 }
+        flowId: { type: [string, 'null'], format: uuid, description: null ungroups the connection }
+        endpoint: { type: [string, 'null'], maxLength: 600, examples: ['POST /invoices'], description: 'METHOD /path of an endpoint on the target (FR-054)' }
+    Connection:
+      type: object
+      required: [id, name, sourceId, targetId, sourceName, targetName, dangling]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        kind:
+          oneOf:
+            - $ref: '#/components/schemas/ConnectionKind'
+            - type: 'null'
+        description: { type: [string, 'null'] }
+        flowId: { type: [string, 'null'], format: uuid }
+        endpoint: { type: [string, 'null'], maxLength: 600, examples: ['POST /invoices'], description: 'METHOD /path of an endpoint on the target (FR-054)' }
+        sourceId: { type: [string, 'null'], format: uuid }
+        targetId: { type: [string, 'null'], format: uuid }
+        sourceName: { type: string }
+        targetName: { type: string }
+        dangling: { type: boolean }
+    ConnectionMutation:
+      type: object
+      required: [connection, revision]
+      properties:
+        connection: { $ref: '#/components/schemas/Connection' }
+        revision: { type: integer, format: int64 }
+
+    # ---------- connections document ----------
+    ConnectionsDocument:
+      description: >
+        Wire format v1. Full definition, including cross-entry rules, in
+        connections-document.schema.json. Kinds are lowercase here.
+      type: object
+      required: [formatVersion, connections]
+      properties:
+        formatVersion: { const: 2 }
+        microservices:
+          type: array
+          items:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string }
+              description: { type: [string, 'null'] }
+        flows:
+          type: array
+          items:
+            type: object
+            required: [name, color]
+            properties:
+              name: { type: string }
+              color: { enum: [blue, purple, orange, pink, amber, brown, cyan, slate] }
+        connections:
+          type: array
+          items:
+            type: object
+            required: [name, source, target]
+            properties:
+              name: { type: string }
+              source: { type: string }
+              target: { type: string }
+              kind: { enum: [request, event] }
+              flow: { type: string, description: name of a listed flow }
+              endpoint: { type: string, examples: ['POST /invoices'] }
+              description: { type: [string, 'null'] }
+    ConnectionsDocumentExport:
+      type: object
+      required: [document, text, revision, excludedDanglingConnections]
+      properties:
+        document: { $ref: '#/components/schemas/ConnectionsDocument' }
+        text:
+          type: string
+          description: The same document, serialized deterministically (2-space indent, trailing newline)
+        revision: { type: integer, format: int64 }
+        excludedDanglingConnections:
+          type: integer
+          description: Dangling connections are not exported; resolve them first
+    ConnectionsDocumentSubmit:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          description: The document as text, so syntax errors can carry line and column (research R6)
+        baseRevision:
+          type: [integer, 'null']
+          format: int64
+          description: Revision the editor opened; stale → 409. Omit for file uploads after preview.
+    ConnectionChangeSummary:
+      type: object
+      required: [name, source, target]
+      properties:
+        connectionId: { type: [string, 'null'], format: uuid }
+        name: { type: string }
+        source: { type: string }
+        target: { type: string }
+        kindBefore: { type: [string, 'null'] }
+        kindAfter: { type: [string, 'null'] }
+        descriptionBefore: { type: [string, 'null'] }
+        descriptionAfter: { type: [string, 'null'] }
+        flowBefore: { type: [string, 'null'] }
+        flowAfter: { type: [string, 'null'] }
+        endpointBefore: { type: [string, 'null'] }
+        endpointAfter: { type: [string, 'null'] }
+    FlowChange:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        colorBefore: { type: [string, 'null'] }
+        colorAfter: { type: [string, 'null'] }
+    ConnectionsDocumentChanges:
+      type: object
+      required: [microservicesAdded, microservicesChanged, connectionsAdded, connectionsChanged, connectionsRemoved, flowsAdded, flowsChanged, unchanged]
+      properties:
+        microservicesAdded:
+          type: array
+          items: { type: string }
+        microservicesChanged:
+          type: array
+          items:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string }
+              descriptionBefore: { type: [string, 'null'] }
+              descriptionAfter: { type: [string, 'null'] }
+        connectionsAdded:
+          type: array
+          items: { $ref: '#/components/schemas/ConnectionChangeSummary' }
+        connectionsChanged:
+          type: array
+          items: { $ref: '#/components/schemas/ConnectionChangeSummary' }
+        connectionsRemoved:
+          type: array
+          items: { $ref: '#/components/schemas/ConnectionChangeSummary' }
+        flowsAdded:
+          type: array
+          items: { $ref: '#/components/schemas/FlowChange' }
+        flowsChanged:
+          type: array
+          items: { $ref: '#/components/schemas/FlowChange' }
+        unchanged: { type: boolean }
+    ConnectionsDocumentPreview:
+      type: object
+      required: [changes, revision]
+      properties:
+        changes: { $ref: '#/components/schemas/ConnectionsDocumentChanges' }
+        revision: { type: integer, format: int64, description: Pass back as baseRevision to apply exactly this preview }
+    ConnectionsDocumentApplied:
+      type: object
+      required: [changes, revision]
+      properties:
+        changes: { $ref: '#/components/schemas/ConnectionsDocumentChanges' }
+        revision: { type: integer, format: int64 }
+
+    # ---------- canvas (React Connection shapes) ----------
+    XYPosition:
+      type: object
+      required: [x, y]
+      properties:
+        x: { type: number }
+        y: { type: number }
+    MicroserviceNodeData:
+      type: object
+      required: [microserviceId, name, specCardId, cardCollapsed]
+      properties:
+        microserviceId: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        specCardId: { type: [string, 'null'], format: uuid }
+        cardTitle: { type: [string, 'null'] }
+        cardCollapsed: { type: boolean, description: "Show the 'API: {title}' badge instead of the docked card" }
+    SpecCardNodeData:
+      type: object
+      required: [cardId, title, specFormat, sourceType, contentHash, lastSyncAt, lastSyncStatus, endpoints, linkedMicroserviceId]
+      properties:
+        cardId: { type: string, format: uuid }
+        title: { type: string }
+        apiVersion: { type: [string, 'null'] }
+        specFormat: { $ref: '#/components/schemas/SpecFormat' }
+        sourceType: { enum: [PASTE, URL] }
+        sourceUrl: { type: [string, 'null'] }
+        contentHash: { type: string, description: Identifies the spec upload (traceability) }
+        lastSyncAt: { type: string, format: date-time }
+        lastSyncStatus: { enum: [OK, FAILED] }
+        endpoints:
+          type: array
+          items: { $ref: '#/components/schemas/Endpoint' }
+        linkedMicroserviceId: { type: [string, 'null'], format: uuid }
+    CanvasNode:
+      type: object
+      description: >
+        React Connection Node. Microservice nodes have id `ms:{uuid}`; card nodes `card:{uuid}`. A docked
+        card has parentId set to its microservice node and a position relative to it (research R8).
+        Collapsed docked cards are sent with hidden = true.
+      required: [id, type, position, data]
+      properties:
+        id: { type: string }
+        type: { enum: [microservice, specCard] }
+        parentId: { type: [string, 'null'] }
+        draggable: { type: boolean }
+        hidden: { type: boolean, description: "true for a docked card collapsed to its 'API' badge; still sent so its endpoints are known" }
+        position:
+          oneOf:
+            - $ref: '#/components/schemas/XYPosition'
+            - type: 'null'
+          description: null when never positioned; the client places it
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/MicroserviceNodeData'
+            - $ref: '#/components/schemas/SpecCardNodeData'
+    ConnectionEdgeData:
+      type: object
+      required: [connectionId, name]
+      properties:
+        connectionId: { type: string, format: uuid }
+        name: { type: string }
+        kind:
+          oneOf:
+            - $ref: '#/components/schemas/ConnectionKind'
+            - type: 'null'
+        description: { type: [string, 'null'] }
+        flowId: { type: [string, 'null'], format: uuid }
+        endpoint: { type: [string, 'null'], maxLength: 600, examples: ['POST /invoices'], description: 'METHOD /path of an endpoint on the target (FR-054)' }
+        endpointMissing: { type: boolean, description: the target has a spec card without this endpoint (FR-055) }
+    CanvasEdge:
+      type: object
+      description: React Connection Edge for an attached connection. Parallel offsets and bundling are computed client-side (research R11).
+      required: [id, source, target, type, data]
+      properties:
+        id: { type: string, description: 'connection:{uuid}' }
+        source: { type: string, description: 'ms:{uuid}' }
+        target: { type: string }
+        type: { const: connection }
+        data: { $ref: '#/components/schemas/ConnectionEdgeData' }
+    CanvasResponse:
+      type: object
+      required: [nodes, edges, danglingConnections, flows, revision, layoutVersion]
+      properties:
+        nodes:
+          type: array
+          items: { $ref: '#/components/schemas/CanvasNode' }
+        edges:
+          type: array
+          items: { $ref: '#/components/schemas/CanvasEdge' }
+        danglingConnections:
+          type: array
+          items: { $ref: '#/components/schemas/Connection' }
+        flows:
+          type: array
+          items: { $ref: '#/components/schemas/Flow' }
+        revision: { type: integer, format: int64 }
+        layoutVersion: { type: integer }
+    LayoutUpdate:
+      type: object
+      required: [positions, collapsedCards, version]
+      properties:
+        positions:
+          type: object
+          description: Keys `ms:{uuid}` and `card:{uuid}` (unlinked cards only)
+          additionalProperties: { $ref: '#/components/schemas/XYPosition' }
+        collapsedCards:
+          type: array
+          items: { type: string, format: uuid }
+        version: { type: integer }
+
+    # ---------- scenarios (content v2, research R9) ----------
+    SimpleField:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, description: 'Field path; nested as `shipping.city` or `items[].discount`' }
+        type: { type: string }
+    ProposedEndpoint:
+      type: object
+      required: [method, path]
+      properties:
+        method: { $ref: '#/components/schemas/HttpMethod' }
+        path: { type: string }
+        inputs:
+          type: array
+          items: { $ref: '#/components/schemas/SimpleField' }
+        outputs:
+          type: array
+          items: { $ref: '#/components/schemas/SimpleField' }
+    ProposedMicroservice:
+      type: object
+      required: [tempKey, name]
+      properties:
+        tempKey: { type: string, pattern: '^proposed:' }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: [string, 'null'] }
+        card:
+          type: [object, 'null']
+          required: [title, endpoints]
+          properties:
+            title: { type: string }
+            endpoints:
+              type: array
+              items: { $ref: '#/components/schemas/ProposedEndpoint' }
+    ProposedLink:
+      type: object
+      required: [microservice, cardId]
+      properties:
+        microservice: { type: string, description: baseline microservice id or proposed tempKey }
+        cardId: { type: string, format: uuid }
+    ProposedConnection:
+      type: object
+      required: [id, source, target, name]
+      properties:
+        id: { type: string }
+        source: { type: string, description: baseline microservice id or proposed tempKey }
+        target: { type: string }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        kind:
+          oneOf:
+            - $ref: '#/components/schemas/ConnectionKind'
+            - type: 'null'
+        description: { type: [string, 'null'] }
+        flowId: { type: [string, 'null'], format: uuid, description: an existing flow (FR-053) }
+        endpoint: { type: [string, 'null'], maxLength: 600 }
+    AddedEndpoint:
+      type: object
+      required: [cardId, endpoint]
+      properties:
+        cardId: { type: string, format: uuid }
+        endpoint: { $ref: '#/components/schemas/ProposedEndpoint' }
+    AddedField:
+      type: object
+      required: [cardId, endpointKey, direction, field]
+      properties:
+        cardId: { type: string, format: uuid }
+        endpointKey: { type: string }
+        direction: { enum: [IN, OUT] }
+        field: { $ref: '#/components/schemas/SimpleField' }
+    ScenarioRemovals:
+      type: object
+      required: [connections, microservices, links]
+      properties:
+        connections:
+          type: array
+          items: { type: string, format: uuid }
+        microservices:
+          type: array
+          items: { type: string, format: uuid }
+        links:
+          type: array
+          description: Microservice ids whose card link is proposed for removal
+          items: { type: string, format: uuid }
+    ConnectionChange:
+      type: object
+      required: [connectionId]
+      minProperties: 2
+      properties:
+        connectionId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        kind: { enum: [REQUEST, EVENT, NONE] }
+        description: { type: [string, 'null'] }
+        flowId: { type: [string, 'null'], description: 'a flow id, or NONE to ungroup (FR-053)' }
+        endpoint: { type: [string, 'null'], description: 'METHOD /path, or NONE to clear (FR-056)' }
+    ScenarioContent:
+      type: object
+      required: [proposedMicroservices, proposedLinks, proposedConnections, addedEndpoints, addedFields, removals, connectionChanges, positions]
+      properties:
+        proposedMicroservices:
+          type: array
+          items: { $ref: '#/components/schemas/ProposedMicroservice' }
+        proposedLinks:
+          type: array
+          items: { $ref: '#/components/schemas/ProposedLink' }
+        proposedConnections:
+          type: array
+          items: { $ref: '#/components/schemas/ProposedConnection' }
+        addedEndpoints:
+          type: array
+          items: { $ref: '#/components/schemas/AddedEndpoint' }
+        addedFields:
+          type: array
+          items: { $ref: '#/components/schemas/AddedField' }
+        removals: { $ref: '#/components/schemas/ScenarioRemovals' }
+        connectionChanges:
+          type: array
+          items: { $ref: '#/components/schemas/ConnectionChange' }
+        positions:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/XYPosition' }
+    ScenarioWrite:
+      type: object
+      required: [name, content]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: [string, 'null'], maxLength: 2000 }
+        content: { $ref: '#/components/schemas/ScenarioContent' }
+    ScenarioSummary:
+      type: object
+      required: [id, name, version, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    Orphan:
+      type: object
+      required: [ref, usedBy]
+      properties:
+        ref: { type: string, description: missing microservice id, card id, endpointKey or connection id }
+        usedBy:
+          type: array
+          items: { type: string, examples: ['proposedConnections[2]', 'removals.connections[0]'] }
+    Scenario:
+      allOf:
+        - $ref: '#/components/schemas/ScenarioSummary'
+        - type: object
+          required: [content, orphans, baselineDrift]
+          properties:
+            content: { $ref: '#/components/schemas/ScenarioContent' }
+            orphans:
+              type: array
+              items: { $ref: '#/components/schemas/Orphan' }
+            baselineDrift:
+              type: array
+              items: { type: string, format: uuid }
+              description: Card ids whose spec changed since the scenario was saved
+    ScenarioDocument:
+      type: object
+      required: [formatVersion, name, content, exportedAt]
+      properties:
+        formatVersion: { const: 3 }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        exportedAt: { type: string, format: date-time }
+        baselineRef:
+          type: object
+          properties:
+            cards:
+              type: object
+              additionalProperties: { type: string }
+            revision: { type: integer, format: int64 }
+        content: { $ref: '#/components/schemas/ScenarioContent' }
+    ScenarioDocumentAny:
+      type: object
+      description: A formatVersion 3 document; formatVersion 2 (before the connections/flows rename) and 1 (feature 002) are converted on import
+      required: [formatVersion, name, content]
+      properties:
+        formatVersion: { enum: [1, 2, 3] }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        content: { type: object }
+    ScenarioImported:
+      allOf:
+        - $ref: '#/components/schemas/Scenario'
+        - type: object
+          required: [conversionNotes]
+          properties:
+            conversionNotes:
+              type: array
+              items: { type: string }
+              description: What a v1 → v2 conversion dropped or renamed; empty for v2 imports
+
+    # ---------- migration ----------
+    MigrationReport:
+      type: object
+      required: [ranAt, counts, notes, acknowledged]
+      properties:
+        ranAt: { type: string, format: date-time }
+        counts:
+          type: object
+          required: [microservices, cards, connections, scenarios, positions, skippedDeletedEdges, discardedDismissals, discardedSettings]
+          properties:
+            microservices: { type: integer }
+            cards: { type: integer }
+            connections: { type: integer }
+            scenarios: { type: integer }
+            positions: { type: integer }
+            skippedDeletedEdges: { type: integer }
+            discardedDismissals: { type: integer }
+            discardedSettings: { type: integer }
+        notes:
+          type: array
+          items: { type: string }
+        acknowledged: { type: boolean }

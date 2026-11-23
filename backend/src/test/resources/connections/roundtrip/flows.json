@@ -1,0 +1,18 @@
+{
+  "formatVersion": 2,
+  "microservices": [
+    { "name": "Billing" },
+    { "name": "Orders" },
+    { "name": "Payments" }
+  ],
+  "flows": [
+    { "name": "Checkout", "color": "blue" },
+    { "name": "Refunds", "color": "orange" },
+    { "name": "Unused", "color": "slate" }
+  ],
+  "connections": [
+    { "name": "Create invoice", "source": "Orders", "target": "Billing", "kind": "request", "endpoint": "post /invoices/{id}", "flow": "Checkout" },
+    { "name": "Refund issued", "source": "Payments", "target": "Orders", "kind": "event", "flow": "refunds" },
+    { "name": "Ping", "source": "Billing", "target": "Payments" }
+  ]
+}

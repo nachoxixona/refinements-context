@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://refinements.local/schemas/connections-document-v1.json",
+  "title": "Connections Document v2",
+  "description": "Microservices and the connections between them (spec 003, research R4). Documentation and editor aid only: the backend validator is authoritative and also enforces the cross-entry rules listed in $comment.",
+  "$comment": "Cross-entry rules not expressible here: names compare as lower(trim(collapse spaces)); a connection's source and target MUST differ; (source, target, name) MUST be unique among connections; microservice names MUST be unique in the list; a connection's flow MUST be listed in flows; flow names MUST be unique; at most 5000 connections and 2000 microservices; document at most 2 MB. A step requires a flow.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "formatVersion",
+    "connections"
+  ],
+  "properties": {
+    "formatVersion": {
+      "const": 2,
+      "description": "2 since the \"connections and flows\" rename; version 1 documents (flows = connections, groups = flows) are still accepted on import"
+    },
+    "microservices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2000
+          },
+          "team": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120,
+            "description": "Owning team (spec 004 FR-013)"
+          },
+          "repository": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2048,
+            "pattern": "^\\s*[Hh][Tt][Tt][Pp][Ss]?://\\S+\\s*$",
+            "description": "Repository URL, http or https (spec 004 FR-016)"
+          },
+          "docs": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2048,
+            "pattern": "^\\s*[Hh][Tt][Tt][Pp][Ss]?://\\S+\\s*$",
+            "description": "Documentation URL, http or https (spec 004 FR-016)"
+          }
+        }
+      }
+    },
+    "flows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "color"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "\\S"
+          },
+          "color": {
+            "enum": [
+              "blue",
+              "purple",
+              "orange",
+              "pink",
+              "amber",
+              "brown",
+              "cyan",
+              "slate"
+            ]
+          }
+        }
+      }
+    },
+    "connections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "source",
+          "target"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "\\S"
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "\\S"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "\\S"
+          },
+          "kind": {
+            "enum": [
+              "request",
+              "event"
+            ]
+          },
+          "endpoint": {
+            "type": "string",
+            "maxLength": 600,
+            "pattern": "^\\s*[A-Za-z]+\\s+/\\S*\\s*$",
+            "description": "METHOD /path of an endpoint on the target microservice (FR-054)"
+          },
+          "flow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Name of a flow listed in flows"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2000
+          },
+          "step": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Order of the connection in its flow; connections with the same step happen in parallel. Requires flow (spec 004 FR-006)."
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "formatVersion": 2,
+      "microservices": [
+        {
+          "name": "Billing"
+        },
+        {
+          "name": "Orders",
+          "description": "Order lifecycle"
+        }
+      ],
+      "flows": [
+        {
+          "name": "Checkout",
+          "color": "blue"
+        },
+        {
+          "name": "Payments",
+          "color": "orange"
+        }
+      ],
+      "connections": [
+        {
+          "name": "Create invoice",
+          "source": "Orders",
+          "target": "Billing",
+          "kind": "request",
+          "flow": "Checkout",
+          "endpoint": "POST /invoices"
+        },
+        {
+          "name": "Order placed",
+          "source": "Orders",
+          "target": "Billing",
+          "kind": "event",
+          "description": "Published on checkout",
+          "flow": "Checkout"
+        },
+        {
+          "name": "Invoice paid",
+          "source": "Billing",
+          "target": "Orders",
+          "kind": "event",
+          "flow": "Payments"
+        }
+      ]
+    }
+  ]
+}

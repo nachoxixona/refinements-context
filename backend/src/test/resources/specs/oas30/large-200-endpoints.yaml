@@ -1,0 +1,2905 @@
+openapi: 3.0.3
+info:
+  title: Large Service
+  version: '1'
+paths:
+  /items0/{itemId}:
+    get:
+      operationId: getItem0
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item0Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem0
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items1/{itemId}:
+    get:
+      operationId: getItem1
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item1Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem1
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items2/{itemId}:
+    get:
+      operationId: getItem2
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item2Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem2
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items3/{itemId}:
+    get:
+      operationId: getItem3
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item3Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem3
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items4/{itemId}:
+    get:
+      operationId: getItem4
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item4Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem4
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items5/{itemId}:
+    get:
+      operationId: getItem5
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item5Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem5
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items6/{itemId}:
+    get:
+      operationId: getItem6
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item6Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem6
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items7/{itemId}:
+    get:
+      operationId: getItem7
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item7Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem7
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items8/{itemId}:
+    get:
+      operationId: getItem8
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item8Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem8
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items9/{itemId}:
+    get:
+      operationId: getItem9
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item9Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem9
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items10/{itemId}:
+    get:
+      operationId: getItem10
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item10Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem10
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items11/{itemId}:
+    get:
+      operationId: getItem11
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item11Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem11
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items12/{itemId}:
+    get:
+      operationId: getItem12
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item12Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem12
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items13/{itemId}:
+    get:
+      operationId: getItem13
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item13Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem13
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items14/{itemId}:
+    get:
+      operationId: getItem14
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item14Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem14
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items15/{itemId}:
+    get:
+      operationId: getItem15
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item15Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem15
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items16/{itemId}:
+    get:
+      operationId: getItem16
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item16Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem16
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items17/{itemId}:
+    get:
+      operationId: getItem17
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item17Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem17
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items18/{itemId}:
+    get:
+      operationId: getItem18
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item18Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem18
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items19/{itemId}:
+    get:
+      operationId: getItem19
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item19Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem19
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items20/{itemId}:
+    get:
+      operationId: getItem20
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item20Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem20
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items21/{itemId}:
+    get:
+      operationId: getItem21
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item21Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem21
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items22/{itemId}:
+    get:
+      operationId: getItem22
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item22Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem22
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items23/{itemId}:
+    get:
+      operationId: getItem23
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item23Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem23
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items24/{itemId}:
+    get:
+      operationId: getItem24
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item24Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem24
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items25/{itemId}:
+    get:
+      operationId: getItem25
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item25Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem25
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items26/{itemId}:
+    get:
+      operationId: getItem26
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item26Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem26
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items27/{itemId}:
+    get:
+      operationId: getItem27
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item27Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem27
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items28/{itemId}:
+    get:
+      operationId: getItem28
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item28Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem28
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items29/{itemId}:
+    get:
+      operationId: getItem29
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item29Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem29
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items30/{itemId}:
+    get:
+      operationId: getItem30
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item30Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem30
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items31/{itemId}:
+    get:
+      operationId: getItem31
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item31Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem31
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items32/{itemId}:
+    get:
+      operationId: getItem32
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item32Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem32
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items33/{itemId}:
+    get:
+      operationId: getItem33
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item33Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem33
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items34/{itemId}:
+    get:
+      operationId: getItem34
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item34Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem34
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items35/{itemId}:
+    get:
+      operationId: getItem35
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item35Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem35
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items36/{itemId}:
+    get:
+      operationId: getItem36
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item36Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem36
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items37/{itemId}:
+    get:
+      operationId: getItem37
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item37Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem37
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items38/{itemId}:
+    get:
+      operationId: getItem38
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item38Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem38
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items39/{itemId}:
+    get:
+      operationId: getItem39
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item39Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem39
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items40/{itemId}:
+    get:
+      operationId: getItem40
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item40Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem40
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items41/{itemId}:
+    get:
+      operationId: getItem41
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item41Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem41
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items42/{itemId}:
+    get:
+      operationId: getItem42
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item42Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem42
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items43/{itemId}:
+    get:
+      operationId: getItem43
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item43Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem43
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items44/{itemId}:
+    get:
+      operationId: getItem44
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item44Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem44
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items45/{itemId}:
+    get:
+      operationId: getItem45
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item45Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem45
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items46/{itemId}:
+    get:
+      operationId: getItem46
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item46Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem46
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items47/{itemId}:
+    get:
+      operationId: getItem47
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item47Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem47
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items48/{itemId}:
+    get:
+      operationId: getItem48
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item48Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem48
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items49/{itemId}:
+    get:
+      operationId: getItem49
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item49Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem49
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items50/{itemId}:
+    get:
+      operationId: getItem50
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item50Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem50
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items51/{itemId}:
+    get:
+      operationId: getItem51
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item51Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem51
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items52/{itemId}:
+    get:
+      operationId: getItem52
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item52Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem52
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items53/{itemId}:
+    get:
+      operationId: getItem53
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item53Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem53
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items54/{itemId}:
+    get:
+      operationId: getItem54
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item54Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem54
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items55/{itemId}:
+    get:
+      operationId: getItem55
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item55Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem55
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items56/{itemId}:
+    get:
+      operationId: getItem56
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item56Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem56
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items57/{itemId}:
+    get:
+      operationId: getItem57
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item57Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem57
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items58/{itemId}:
+    get:
+      operationId: getItem58
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item58Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem58
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items59/{itemId}:
+    get:
+      operationId: getItem59
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item59Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem59
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items60/{itemId}:
+    get:
+      operationId: getItem60
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item60Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem60
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items61/{itemId}:
+    get:
+      operationId: getItem61
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item61Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem61
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items62/{itemId}:
+    get:
+      operationId: getItem62
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item62Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem62
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items63/{itemId}:
+    get:
+      operationId: getItem63
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item63Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem63
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items64/{itemId}:
+    get:
+      operationId: getItem64
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item64Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem64
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items65/{itemId}:
+    get:
+      operationId: getItem65
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item65Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem65
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items66/{itemId}:
+    get:
+      operationId: getItem66
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item66Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem66
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items67/{itemId}:
+    get:
+      operationId: getItem67
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item67Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem67
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items68/{itemId}:
+    get:
+      operationId: getItem68
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item68Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem68
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items69/{itemId}:
+    get:
+      operationId: getItem69
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item69Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem69
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items70/{itemId}:
+    get:
+      operationId: getItem70
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item70Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem70
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items71/{itemId}:
+    get:
+      operationId: getItem71
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item71Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem71
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items72/{itemId}:
+    get:
+      operationId: getItem72
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item72Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem72
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items73/{itemId}:
+    get:
+      operationId: getItem73
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item73Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem73
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items74/{itemId}:
+    get:
+      operationId: getItem74
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item74Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem74
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items75/{itemId}:
+    get:
+      operationId: getItem75
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item75Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem75
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items76/{itemId}:
+    get:
+      operationId: getItem76
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item76Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem76
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items77/{itemId}:
+    get:
+      operationId: getItem77
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item77Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem77
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items78/{itemId}:
+    get:
+      operationId: getItem78
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item78Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem78
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items79/{itemId}:
+    get:
+      operationId: getItem79
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item79Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem79
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items80/{itemId}:
+    get:
+      operationId: getItem80
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item80Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem80
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items81/{itemId}:
+    get:
+      operationId: getItem81
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item81Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem81
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items82/{itemId}:
+    get:
+      operationId: getItem82
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item82Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem82
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items83/{itemId}:
+    get:
+      operationId: getItem83
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item83Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem83
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items84/{itemId}:
+    get:
+      operationId: getItem84
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item84Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem84
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items85/{itemId}:
+    get:
+      operationId: getItem85
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item85Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem85
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items86/{itemId}:
+    get:
+      operationId: getItem86
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item86Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem86
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items87/{itemId}:
+    get:
+      operationId: getItem87
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item87Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem87
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items88/{itemId}:
+    get:
+      operationId: getItem88
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item88Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem88
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items89/{itemId}:
+    get:
+      operationId: getItem89
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item89Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem89
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items90/{itemId}:
+    get:
+      operationId: getItem90
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item90Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem90
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items91/{itemId}:
+    get:
+      operationId: getItem91
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item91Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem91
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items92/{itemId}:
+    get:
+      operationId: getItem92
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item92Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem92
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items93/{itemId}:
+    get:
+      operationId: getItem93
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item93Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem93
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items94/{itemId}:
+    get:
+      operationId: getItem94
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item94Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem94
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items95/{itemId}:
+    get:
+      operationId: getItem95
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item95Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem95
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items96/{itemId}:
+    get:
+      operationId: getItem96
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item96Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem96
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items97/{itemId}:
+    get:
+      operationId: getItem97
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item97Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem97
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items98/{itemId}:
+    get:
+      operationId: getItem98
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item98Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem98
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated
+  /items99/{itemId}:
+    get:
+      operationId: getItem99
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item99Id: { type: string }
+                  price: { type: number }
+    put:
+      operationId: putItem99
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+      responses:
+        '204':
+          description: updated

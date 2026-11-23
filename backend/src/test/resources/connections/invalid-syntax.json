@@ -1,0 +1,7 @@
+{
+  "formatVersion": 2,
+  "connections": [
+    { "name": "A", "source": "X", "target": "Y" }
+    { "name": "B", "source": "X", "target": "Y" }
+  ]
+}

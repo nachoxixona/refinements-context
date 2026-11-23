@@ -1,0 +1,19 @@
+{
+  "formatVersion": 2,
+  "microservices": [
+    { "name": "Billing", "description": "Invoices and payments" },
+    { "name": "Catalog" },
+    { "name": "Notifications" },
+    { "name": "Orders", "description": "Order lifecycle" },
+    { "name": "Payments" }
+  ],
+  "connections": [
+    { "name": "Create invoice", "source": "Orders", "target": "Billing", "kind": "request" },
+    { "name": "Order placed", "source": "Orders", "target": "Billing", "kind": "event", "description": "Published on checkout" },
+    { "name": "Invoice paid", "source": "Billing", "target": "Orders", "kind": "event" },
+    { "name": "Get product", "source": "Orders", "target": "Catalog", "kind": "request" },
+    { "name": "Charge card", "source": "Billing", "target": "Payments", "kind": "request" },
+    { "name": "Send receipt", "source": "Billing", "target": "Notifications" },
+    { "name": "Order shipped", "source": "Orders", "target": "Notifications", "kind": "event" }
+  ]
+}

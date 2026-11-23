@@ -1,0 +1,9 @@
+{
+  "Customer": {
+    "type": "object",
+    "properties": {
+      "customerId": { "type": "string" },
+      "email": { "type": "string" }
+    }
+  }
+}

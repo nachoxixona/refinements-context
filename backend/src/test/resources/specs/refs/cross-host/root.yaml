@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info:
+  title: Cross Host
+  version: 1.0.0
+paths:
+  /things:
+    get:
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: 'http://other-host.invalid/schemas/thing.yaml#/Thing'

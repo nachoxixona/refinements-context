@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: Broken Service
+  version: 0.0.1
+paths:
+  /things:
+    get:
+      responses:
+        '200':
+          description: Things
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Missing'
+components:
+  schemas: {}

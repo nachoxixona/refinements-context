@@ -1,0 +1,13 @@
+{
+  "formatVersion": 2,
+  "microservices": [
+    { "name": "Alpha", "description": "First" },
+    { "name": "Beta" },
+    { "name": "Lonely", "description": "Has no connections" }
+  ],
+  "connections": [
+    { "name": "Ping", "source": "Alpha", "target": "Beta", "kind": "request", "description": "Health" },
+    { "name": "Pong", "source": "Beta", "target": "Alpha", "kind": "event" },
+    { "name": "Ping", "source": "Beta", "target": "Alpha" }
+  ]
+}

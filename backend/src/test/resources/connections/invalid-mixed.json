@@ -1,0 +1,18 @@
+{
+  "formatVersion": 2,
+  "microservices": [
+    { "name": "Orders" },
+    { "name": "orders " },
+    { "name": "" }
+  ],
+  "connections": [
+    { "name": "Ok", "source": "Orders", "target": "Billing" },
+    { "name": "No target", "source": "Orders" },
+    { "name": "Loop", "source": "Orders", "target": " ORDERS" },
+    { "name": "Bad kind", "source": "Orders", "target": "Billing", "kind": "async" },
+    { "name": "ok", "source": "orders", "target": "billing" },
+    { "name": "Typo", "source": "Orders", "target": "Billing", "lable": "x" },
+    { "name": 42, "source": "Orders", "target": "Billing" },
+    { "name": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "source": "Orders", "target": "Billing" }
+  ]
+}

@@ -1,0 +1,82 @@
+openapi: 3.0.3
+info:
+  title: Ref Chains
+  version: 1.0.0
+paths:
+  /accounts/{accountId}:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      responses:
+        '200':
+          $ref: '#/components/responses/AccountResponse'
+  /payments:
+    post:
+      requestBody:
+        $ref: '#/components/requestBodies/PaymentBody'
+      responses:
+        '201':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreeNode'
+components:
+  parameters:
+    AccountId:
+      name: accountId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Identifier'
+  responses:
+    AccountResponse:
+      description: account
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Account'
+  requestBodies:
+    PaymentBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PaymentMethod'
+  schemas:
+    Identifier:
+      type: string
+    Owner:
+      type: object
+      properties:
+        ownerId: { $ref: '#/components/schemas/Identifier' }
+        address:
+          $ref: '#/components/schemas/Address'
+    Address:
+      type: object
+      properties:
+        city: { type: string }
+    Account:
+      allOf:
+        - type: object
+          required: [accountId]
+          properties:
+            accountId: { $ref: '#/components/schemas/Identifier' }
+        - type: object
+          properties:
+            owner: { $ref: '#/components/schemas/Owner' }
+    PaymentMethod:
+      oneOf:
+        - type: object
+          properties:
+            cardNumber: { type: string }
+        - type: object
+          properties:
+            iban: { type: string }
+    TreeNode:
+      type: object
+      properties:
+        label: { type: string }
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreeNode'

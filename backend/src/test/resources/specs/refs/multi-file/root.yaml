@@ -1,0 +1,19 @@
+openapi: 3.0.3
+info:
+  title: Multi File
+  version: 1.0.0
+paths:
+  /orders/{orderId}:
+    get:
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: './schemas/order.yaml#/Order'

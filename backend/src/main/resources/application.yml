@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: architecture-visualizer
+  # PostgreSQL; override with SPRING_DATASOURCE_URL / _USERNAME / _PASSWORD (docker-compose.yml does)
+  datasource:
+    url: jdbc:postgresql://localhost:5433/visualizer
+    username: visualizer
+    password: visualizer
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+visualizer:
+  spec:
+    max-bytes: 10485760 # 10 MB of decoded spec content
+  connections-document:
+    max-bytes: 2097152 # 2 MB (research R4)
+    max-connections: 5000
+    max-microservices: 2000
+  http:
+    max-body-bytes: 12582912 # 12 MB request bodies: JSON envelope and escaping overhead
+  fetch:
+    connect-timeout: 5s
+    read-timeout: 15s
+    max-redirects: 3
+    allowed-hosts: [] # empty means all hosts are allowed for top-level spec URLs
+  refs:
+    remote-allowlist: [] # hosts other than the spec's own host that $refs may point to

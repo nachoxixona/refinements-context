@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: Simple Thirty
+  version: 1.0.0
+servers:
+  - url: https://simple.example.com/api
+paths:
+  /widgets/{widgetId}:
+    parameters:
+      - name: widgetId
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      parameters:
+        - name: verbose
+          in: query
+          schema: { type: boolean }
+        - name: X-Trace
+          in: header
+          schema: { type: string }
+        - name: session
+          in: cookie
+          schema: { type: string }
+      responses:
+        '204':
+          description: none
+        '200':
+          description: ok
+          content:
+            text/plain:
+              schema: { type: string }
+            application/vnd.widget+json:
+              schema:
+                type: object
+                properties:
+                  widgetId: { type: integer }
+                  label: { type: string }
+            application/json:
+              schema:
+                type: object
+                properties:
+                  widgetId: { type: integer }
+                  name: { type: string }
+    delete:
+      responses:
+        '204':
+          description: deleted
+  /alpha:
+    post:
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              type: object
+              properties:
+                xmlOnly: { type: string }
+          application/vnd.alpha+json:
+            schema:
+              type: object
+              properties:
+                jsonLike: { type: string }
+      responses:
+        default:
+          description: whatever
