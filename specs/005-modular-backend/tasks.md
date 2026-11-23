@@ -244,11 +244,11 @@ inbound port; plain domain + `*Entity`/`*Mapper` in every module; root package f
 
 ### Enforce the layout
 
-- [ ] T056 [US2] In `T/ModularityTest.java`:
+- [X] T056 [US2] In `T/ModularityTest.java`:
   - Add `JMoleculesArchitectureRules.ensureHexagonal()` over the main classes.
   - Add an ArchUnit rule: classes in any module's `..domain..` package must not depend on `jakarta.persistence..`, `org.springframework.web..`, `org.springframework.data..` or `com.fasterxml.jackson..` (FR-015, research R8).
   - Fix any violations found.
-- [ ] T057 🔖 [US2] Commit "005: enforce hexagonal layout rules".
+- [X] T057 🔖 [US2] Commit "005: enforce hexagonal layout rules".
 
 **Checkpoint**: All 9 modules follow one layout, and the 4 core modules have infrastructure-free domain tests.
 

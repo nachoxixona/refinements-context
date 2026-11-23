@@ -84,7 +84,12 @@ All Technical Context unknowns are resolved below. Each entry: **Decision**, **R
 
   The jMolecules hexagonal rule set forbids ports and the application from depending on adapters. A small extra ArchUnit rule in `ModularityTest` checks that `..domain..` packages of the four core modules import nothing from `jakarta.persistence`, `org.springframework.web` or `com.fasterxml.jackson` (FR-015).
 
-  `ModularityTest` runs both `ApplicationModules.verify()` and `JMoleculesArchitectureRules.ensureHexagonal()`.
+  `ModularityTest` runs `ApplicationModules.verify()` and `JMoleculesArchitectureRules.ensureHexagonal()`, plus three ArchUnit rules over the main classes:
+  - `..domain..` of every module (not only the four core ones, since the small modules got a plain domain too) depends on no `jakarta.persistence`, `org.hibernate`, `org.springframework` or `com.fasterxml.jackson` class;
+  - module root packages (the public API) depend on none of those nor on `io.swagger`, except the `package-info` that declares the module;
+  - only `adapter.out.persistence` packages touch entities and repositories.
+
+  A deliberate Jackson annotation in `note.domain` and an `application` class naming a web controller each fail the build (checked 2026-11-23).
 - **Rationale**: Spring Modulith integrates with jMolecules, and this turns "every module follows one layout" (FR-014) into a failing test instead of a review convention.
 - **Alternatives considered**: Hand-written ArchUnit rules (more code to maintain); review only (erodes over time).
 
