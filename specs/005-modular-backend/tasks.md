@@ -29,7 +29,7 @@
 - [X] T001 Add `.claude/settings.local.json` to the root `.gitignore`. Then run `git init` in the repository root, and with `git status --ignored` check that `backend/data/`, `backend/data.backup-*/`, `target/`, `node_modules/`, `dist/` and `test-results/` are ignored.
 - [X] T002 Run `./mvnw verify` in `backend/` on the untouched code. Confirm it is green and write down the `PerformanceSmokeIT` timings in `specs/005-modular-backend/baseline.md` (SC-006 reference). Also save `GET /api/canvas` and `GET /api/connections-document` from the running app against the live `db-data` DB to a scratch location outside the repo, for quickstart §7.
 - [X] T003 Run `/speckit-constitution` to amend Principle V (FR-020) **before any restructuring**: replace "H2 for local development" with PostgreSQL via docker compose (one Flyway schema script), and add the backend architecture rule — Spring Modulith modules, ports and adapters inside each, `ModularityTest` as a quality gate. MINOR bump to 2.1.0 with a Sync Impact Report. Then update plan.md's Constitution Check row for Principle V to ✅ without the amendment note.
-- [ ] T004 🔖 Make the baseline commit "Baseline before 005 modular backend" containing everything not ignored, including the amended `.specify/memory/constitution.md`.
+- [X] T004 🔖 Make the baseline commit "Baseline before 005 modular backend" containing everything not ignored, including the amended `.specify/memory/constitution.md`.
 
 ---
 
