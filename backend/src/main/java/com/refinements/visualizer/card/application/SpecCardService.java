@@ -1,12 +1,14 @@
-package com.refinements.visualizer.card;
+package com.refinements.visualizer.card.application;
 
-import com.refinements.visualizer.card.adapter.out.fetch.SpecFetcher;
-import com.refinements.visualizer.card.adapter.out.parser.FieldFlattener;
-import com.refinements.visualizer.card.adapter.out.parser.ParsedSpec;
-import com.refinements.visualizer.card.adapter.out.parser.SpecParser;
-import com.refinements.visualizer.card.dto.ImportCardRequest;
-import com.refinements.visualizer.card.dto.SpecCardSummary;
-import com.refinements.visualizer.card.model.ParsedEndpoint;
+import com.refinements.visualizer.card.SourceType;
+import com.refinements.visualizer.card.SpecCardApi;
+import com.refinements.visualizer.card.SpecCardView;
+import com.refinements.visualizer.card.application.port.in.SpecCardUseCases;
+import com.refinements.visualizer.card.application.port.out.SpecCardStore;
+import com.refinements.visualizer.card.application.port.out.SpecParserPort;
+import com.refinements.visualizer.card.application.port.out.SpecParserPort.ParsedSpecification;
+import com.refinements.visualizer.card.application.port.out.SpecSource;
+import com.refinements.visualizer.card.domain.SpecCard;
 import com.refinements.visualizer.card.model.SpecKeys;
 import com.refinements.visualizer.card.spi.CardLinkPort;
 import com.refinements.visualizer.shared.VisualizerProperties;
@@ -30,72 +32,76 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Import, re-sync and delete spec cards (FR-001 – FR-009). Cards never touch connections (FR-007): this class has
- * no dependency on the connection package. A failed re-sync persists its FAILED status while the request still
- * returns the error, so sync is not wrapped in one transaction.
+ * Import, re-sync and delete spec cards (FR-001 – FR-009). Cards never touch connections (FR-007).
+ *
+ * <p>{@link #importCard} and {@link #sync} deliberately run without a surrounding transaction (as before 005): a
+ * failed re-sync saves the FAILED status and then rethrows, and that save must not be rolled back.
  */
 @Service
-public class SpecCardService implements SpecCardApi {
+class SpecCardService implements SpecCardApi, SpecCardUseCases {
 
-    private final SpecCardRepository cards;
+    private final SpecCardStore cards;
     private final CardLinkPort links;
-    private final SpecFetcher fetcher;
-    private final SpecParser parser;
-    private final FieldFlattener flattener;
+    private final SpecSource source;
+    private final SpecParserPort parser;
     private final Clock clock;
     private final long maxBytes;
 
-    public SpecCardService(
-            SpecCardRepository cards,
+    SpecCardService(
+            SpecCardStore cards,
             CardLinkPort links,
-            SpecFetcher fetcher,
-            SpecParser parser,
-            FieldFlattener flattener,
+            SpecSource source,
+            SpecParserPort parser,
             Clock clock,
             VisualizerProperties props) {
         this.cards = cards;
         this.links = links;
-        this.fetcher = fetcher;
+        this.source = source;
         this.parser = parser;
-        this.flattener = flattener;
         this.clock = clock;
         this.maxBytes = props.spec().maxBytes();
     }
 
-    public List<SpecCardSummary> list() {
+    // --- SpecCardUseCases ----------------------------------------------------------------------------------
+
+    @Override
+    public List<CardResult> list() {
         Map<UUID, UUID> linked = links.linksByCard();
-        return cards.findAllByOrderByCreatedAtDesc().stream()
-                .map(c -> SpecCardSummary.from(c, false, linked.get(c.getId())))
+        return cards.findAllNewestFirst().stream()
+                .map(c -> result(c, false, linked.get(c.getId())))
                 .toList();
     }
 
-    /** Imports a spec as a new, unlinked card. Duplicates by SpecCard.contentHash or SpecCard.sourceUrl → 409. */
-    public SpecCardSummary importCard(ImportCardRequest request) {
+    @Override
+    public CardResult importCard(ImportCard command) {
         URI base = null;
         String content;
-        if (request.sourceType() == SourceType.URL) {
-            base = SpecFetcher.validateUrl(request.url());
+        if (command.sourceType() == SourceType.URL) {
+            base = source.validate(command.url());
             Optional<SpecCard> sameUrl = cards.findFirstBySourceUrl(base.toString());
             if (sameUrl.isPresent()) {
                 throw duplicate(sameUrl.get(), "A card for this URL is already on the canvas. Re-sync it instead.");
             }
-            content = fetcher.fetch(base);
+            content = source.fetch(base);
         } else {
-            content = request.content();
+            content = command.content();
         }
         checkSize(content);
-        ParsedSpec parsed = parser.parse(content, base);
+        UUID id = UUID.randomUUID();
+        ParsedSpecification parsed = parser.parse(content, base, id.toString());
         String hash = SpecKeys.contentHash(content);
         Optional<SpecCard> sameContent = cards.findFirstByContentHash(hash);
         if (sameContent.isPresent()) {
             throw duplicate(sameContent.get(), "This spec is already on the canvas.");
         }
-        SpecCard card = new SpecCard(request.sourceType(), base == null ? null : base.toString(), clock.instant());
+        SpecCard card =
+                SpecCard.create(id, command.sourceType(), base == null ? null : base.toString(), clock.instant());
         apply(card, parsed, content, hash);
-        return SpecCardSummary.from(card, false, null);
+        return result(card, false, null);
     }
 
-    public SpecCardSummary sync(UUID cardId, String newContent) {
+    @Override
+    public CardResult sync(UUID cardId, String newContent) {
         SpecCard card = find(cardId);
         boolean hasContent = newContent != null && !newContent.isBlank();
         if (card.getSourceType() == SourceType.PASTE && !hasContent) {
@@ -103,11 +109,11 @@ public class SpecCardService implements SpecCardApi {
         }
         URI base = card.getSourceUrl() == null ? null : URI.create(card.getSourceUrl());
         String content;
-        ParsedSpec parsed;
+        ParsedSpecification parsed;
         try {
-            content = hasContent ? newContent : fetcher.fetch(base);
+            content = hasContent ? newContent : source.fetch(base);
             checkSize(content);
-            parsed = parser.parse(content, base);
+            parsed = parser.parse(content, base, card.getId().toString());
         } catch (SpecInvalidException e) {
             fail(card, e.getErrors());
             throw e;
@@ -116,23 +122,25 @@ public class SpecCardService implements SpecCardApi {
             throw e;
         }
         String hash = SpecKeys.contentHash(content);
-        boolean unchanged = hash.equals(card.getContentHash()) && card.getLastSyncStatus() == SyncStatus.OK;
+        boolean unchanged = card.isUnchangedBy(hash);
         apply(card, parsed, content, hash);
-        return SpecCardSummary.from(card, unchanged, linkedMicroservice(cardId));
+        return result(card, unchanged, links.linkedMicroservice(cardId).orElse(null));
     }
 
-    /** Deletes the card; its microservice (if any) becomes spec-less through the FK. Connections are untouched. */
+    @Override
     @Transactional
     public void delete(UUID cardId) {
-        SpecCard card = find(cardId);
-        links.unlinkCard(cardId);
-        cards.delete(card);
+        find(cardId);
+        links.unlinkCard(cardId); // flushes the unlink before the card row goes (data-model.md ordering table)
+        cards.delete(cardId);
     }
+
+    // --- SpecCardApi ---------------------------------------------------------------------------------------
 
     @Override
     @Transactional(readOnly = true)
     public boolean exists(UUID cardId) {
-        return cards.existsById(cardId);
+        return cards.exists(cardId);
     }
 
     @Override
@@ -140,32 +148,34 @@ public class SpecCardService implements SpecCardApi {
     public List<SpecCardView> findAll() {
         return cards.findAll().stream()
                 .sorted(Comparator.comparing(SpecCard::getCreatedAt).thenComparing(SpecCard::getId))
-                .map(SpecCardView::from)
+                .map(SpecCardService::view)
                 .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public Set<UUID> allIds() {
-        return Set.copyOf(cards.findAllIds());
+        return cards.allIds();
     }
+
+    // --- helpers -------------------------------------------------------------------------------------------
 
     private SpecCard find(UUID cardId) {
         return cards.findById(cardId).orElseThrow(() -> new NotFoundException("No spec card " + cardId + "."));
     }
 
-    private UUID linkedMicroservice(UUID cardId) {
-        return links.linkedMicroservice(cardId).orElse(null);
-    }
-
-    private void apply(SpecCard card, ParsedSpec parsed, String content, String hash) {
+    private void apply(SpecCard card, ParsedSpecification parsed, String content, String hash) {
         if (hash.equals(card.getContentHash())) {
             card.markSynced(clock.instant());
         } else {
-            List<ParsedEndpoint> endpoints =
-                    flattener.flatten(parsed.openApi(), card.getId().toString());
             card.applyParsed(
-                    parsed.title(), parsed.version(), parsed.format(), content, hash, endpoints, clock.instant());
+                    parsed.title(),
+                    parsed.version(),
+                    parsed.format(),
+                    content,
+                    hash,
+                    parsed.endpoints(),
+                    clock.instant());
         }
         cards.save(card);
     }
@@ -184,5 +194,24 @@ public class SpecCardService implements SpecCardApi {
         if (content != null && content.getBytes(StandardCharsets.UTF_8).length > maxBytes) {
             throw new PayloadTooLargeException("The spec exceeds the " + (maxBytes / (1024 * 1024)) + " MB limit.");
         }
+    }
+
+    private static CardResult result(SpecCard c, boolean unchanged, UUID linkedMicroserviceId) {
+        return new CardResult(view(c), List.copyOf(c.getLastSyncErrors()), unchanged, linkedMicroserviceId);
+    }
+
+    static SpecCardView view(SpecCard c) {
+        return new SpecCardView(
+                c.getId(),
+                c.getTitle(),
+                c.getApiVersion(),
+                c.getSpecFormat(),
+                c.getSourceType(),
+                c.getSourceUrl(),
+                c.getContentHash(),
+                c.getLastSyncAt(),
+                c.getLastSyncStatus(),
+                List.copyOf(c.getEndpoints()),
+                c.getCreatedAt());
     }
 }

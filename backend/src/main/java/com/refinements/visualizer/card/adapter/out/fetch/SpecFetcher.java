@@ -1,5 +1,6 @@
 package com.refinements.visualizer.card.adapter.out.fetch;
 
+import com.refinements.visualizer.card.application.port.out.SpecSource;
 import com.refinements.visualizer.shared.VisualizerProperties;
 import com.refinements.visualizer.shared.errors.BadRequestException;
 import com.refinements.visualizer.shared.errors.FetchFailedException;
@@ -27,7 +28,7 @@ import org.springframework.web.client.RestClient;
  * credentials. Also used for every {@code $ref} document the parser needs (research R1).
  */
 @Component
-public class SpecFetcher {
+public class SpecFetcher implements SpecSource {
 
     private final RestClient restClient;
     private final long maxBytes;
@@ -75,6 +76,12 @@ public class SpecFetcher {
         return fetch(validateUrl(url));
     }
 
+    @Override
+    public URI validate(String url) {
+        return validateUrl(url);
+    }
+
+    @Override
     public String fetch(URI start) {
         URI uri = start;
         for (int hop = 0; ; hop++) {

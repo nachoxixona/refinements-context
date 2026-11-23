@@ -1,4 +1,4 @@
-package com.refinements.visualizer.card.dto;
+package com.refinements.visualizer.card.adapter.in.web;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.refinements.visualizer.card.SourceType;

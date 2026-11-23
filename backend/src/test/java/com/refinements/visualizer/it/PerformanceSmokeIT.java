@@ -5,8 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.refinements.visualizer.canvas.CanvasService;
 import com.refinements.visualizer.canvas.dto.CanvasResponse;
 import com.refinements.visualizer.card.SourceType;
-import com.refinements.visualizer.card.SpecCardService;
-import com.refinements.visualizer.card.dto.ImportCardRequest;
+import com.refinements.visualizer.card.application.port.in.SpecCardUseCases;
 import com.refinements.visualizer.microservice.MicroserviceService;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +20,7 @@ class PerformanceSmokeIT extends PostgresIntegrationTest {
     private static final int SERVICES = 100;
 
     @Autowired
-    SpecCardService cards;
+    SpecCardUseCases cards;
 
     @Autowired
     MicroserviceService microservices;
@@ -59,7 +58,8 @@ class PerformanceSmokeIT extends PostgresIntegrationTest {
 
         List<UUID> ids = new ArrayList<>();
         for (int i = 0; i < SERVICES; i++) {
-            UUID card = cards.importCard(new ImportCardRequest(SourceType.PASTE, syntheticSpec(i), null))
+            UUID card = cards.importCard(new SpecCardUseCases.ImportCard(SourceType.PASTE, syntheticSpec(i), null))
+                    .card()
                     .id();
             UUID ms = microservices.create("Service " + i, null).microservice().id();
             microservices.link(ms, card, false);

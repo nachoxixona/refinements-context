@@ -1,8 +1,6 @@
-package com.refinements.visualizer.card;
+package com.refinements.visualizer.card.adapter.in.web;
 
-import com.refinements.visualizer.card.dto.ImportCardRequest;
-import com.refinements.visualizer.card.dto.SpecCardSummary;
-import com.refinements.visualizer.card.dto.SyncCardRequest;
+import com.refinements.visualizer.card.application.port.in.SpecCardUseCases;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -20,30 +18,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/cards")
 public class SpecCardController {
 
-    private final SpecCardService service;
+    private final SpecCardUseCases cards;
 
-    public SpecCardController(SpecCardService service) {
-        this.service = service;
+    SpecCardController(SpecCardUseCases cards) {
+        this.cards = cards;
     }
 
     @GetMapping
     public List<SpecCardSummary> list() {
-        return service.list();
+        return cards.list().stream().map(SpecCardSummary::from).toList();
     }
 
     @PostMapping
     public ResponseEntity<SpecCardSummary> importCard(@Valid @RequestBody ImportCardRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.importCard(request));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(SpecCardSummary.from(cards.importCard(
+                        new SpecCardUseCases.ImportCard(request.sourceType(), request.content(), request.url()))));
     }
 
     @DeleteMapping("/{cardId}")
     public ResponseEntity<Void> delete(@PathVariable UUID cardId) {
-        service.delete(cardId);
+        cards.delete(cardId);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{cardId}/sync")
     public SpecCardSummary sync(@PathVariable UUID cardId, @RequestBody(required = false) SyncCardRequest request) {
-        return service.sync(cardId, request == null ? null : request.content());
+        return SpecCardSummary.from(cards.sync(cardId, request == null ? null : request.content()));
     }
 }

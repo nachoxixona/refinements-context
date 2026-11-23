@@ -1,8 +1,9 @@
-package com.refinements.visualizer.card.dto;
+package com.refinements.visualizer.card.adapter.in.web;
 
 import com.refinements.visualizer.card.SourceType;
-import com.refinements.visualizer.card.SpecCard;
+import com.refinements.visualizer.card.SpecCardView;
 import com.refinements.visualizer.card.SyncStatus;
+import com.refinements.visualizer.card.application.port.in.SpecCardUseCases;
 import com.refinements.visualizer.card.model.SpecFormat;
 import com.refinements.visualizer.shared.errors.ParseError;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,20 +27,21 @@ public record SpecCardSummary(
         boolean unchanged,
         UUID linkedMicroserviceId) {
 
-    public static SpecCardSummary from(SpecCard c, boolean unchanged, UUID linkedMicroserviceId) {
+    static SpecCardSummary from(SpecCardUseCases.CardResult r) {
+        SpecCardView c = r.card();
         return new SpecCardSummary(
-                c.getId(),
-                c.getTitle(),
-                c.getApiVersion(),
-                c.getSpecFormat(),
-                c.getSourceType(),
-                c.getSourceUrl(),
-                c.getContentHash(),
-                c.getEndpoints().size(),
-                c.getLastSyncStatus(),
-                c.getLastSyncAt(),
-                List.copyOf(c.getLastSyncErrors()),
-                unchanged,
-                linkedMicroserviceId);
+                c.id(),
+                c.title(),
+                c.apiVersion(),
+                c.specFormat(),
+                c.sourceType(),
+                c.sourceUrl(),
+                c.contentHash(),
+                c.endpoints().size(),
+                c.lastSyncStatus(),
+                c.lastSyncAt(),
+                r.lastSyncErrors(),
+                r.unchanged(),
+                r.linkedMicroserviceId());
     }
 }

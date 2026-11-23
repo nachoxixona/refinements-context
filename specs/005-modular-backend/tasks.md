@@ -176,20 +176,20 @@ inbound port; plain domain + `*Entity`/`*Mapper` in every module; root package f
 
 ### card (domain split)
 
-- [ ] T039 [US2] Split card into domain and persistence (data-model.md card):
+- [X] T039 [US2] Split card into domain and persistence (data-model.md card):
   - Create the plain `B/card/domain/SpecCard.java` with all state and the behaviour `applyParsed`, `markSynced` and `markFailed`. It has no JPA or Jackson annotations.
   - Move today's entity to `B/card/adapter/out/persistence/SpecCardEntity.java`. Its columns and `@JdbcTypeCode(JSON)` fields stay identical, and Hibernate `validate` must pass.
   - Add `SpecCardJpaRepository` and `SpecCardMapper`.
   - `SpecCardStoreAdapter` does find → copy onto the managed entity → save (R7).
   - Widen package-private members only inside internal packages (visibility rule).
   - Update `T/it/*` setup that uses `SpecCard`/`SpecCardRepository` to `SpecCardEntity`/`SpecCardJpaRepository` (assertions unchanged).
-- [ ] T040 [US2] Restructure card's application and adapter layers:
+- [X] T040 [US2] Restructure card's application and adapter layers:
   - `B/card/application/SpecCardService.java` implements `port/in` (`ImportCard`, `SyncCard`, `DeleteCard`, `ListCards`) and `SpecCardApi`.
   - It uses `port/out/SpecCardStore`, `port/out/SpecSource` (adapter `adapter/out/fetch/HttpSpecFetcher`) and `port/out/SpecParserPort` (adapter `adapter/out/parser/SwaggerSpecParser`, which wraps parse and flatten).
   - The controller and request DTOs go to `adapter/in/web/`, with DTO names unchanged.
-- [ ] T041 [US2] Move `B/microservice/CardLinkAdapter.java` → `B/microservice/adapter/out/card/CardLinkAdapter.java`. Add a `CardCatalogAdapter` that implements microservice's `port/out/CardCatalog` through `SpecCardApi.exists`. This is done here, ahead of T045, so the card commit compiles.
-- [ ] T042 [P] [US2] Add `T/card/domain/SpecCardDomainTest.java`. It covers `applyParsed`, `markSynced`/`markFailed` state and the import duplicate rules through `SpecCardService` with in-memory fakes of `SpecCardStore`, `SpecSource`, `SpecParserPort` and `CardLinkPort`. No Spring context (SC-005).
-- [ ] T043 🔖 [US2] Commit "005: card module — domain split, ports and adapters".
+- [ ] T041 [US2] *(Moved into the microservice step.)* `CardLinkAdapter` already sits in `B/microservice/adapter/out/card/` (placed there in T014). The `CardCatalogAdapter` for microservice's `port/out/CardCatalog` is created together with that port in T045.
+- [X] T042 [P] [US2] Add `T/card/domain/SpecCardDomainTest.java` (title, sync status, unchanged rule) and `T/card/application/SpecCardUseCasesTest.java` (use cases with in-memory ports). It covers `applyParsed`, `markSynced`/`markFailed` state and the import duplicate rules through `SpecCardService` with in-memory fakes of `SpecCardStore`, `SpecSource`, `SpecParserPort` and `CardLinkPort`. No Spring context (SC-005).
+- [X] T043 🔖 [US2] Commit "005: card module — domain split, ports and adapters".
 
 ### microservice (domain split)
 

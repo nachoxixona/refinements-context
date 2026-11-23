@@ -7,9 +7,9 @@ import static org.mockito.Mockito.when;
 import com.refinements.visualizer.canvas.dto.CanvasNode;
 import com.refinements.visualizer.canvas.dto.CanvasResponse;
 import com.refinements.visualizer.card.SourceType;
-import com.refinements.visualizer.card.SpecCard;
 import com.refinements.visualizer.card.SpecCardApi;
 import com.refinements.visualizer.card.SpecCardView;
+import com.refinements.visualizer.card.domain.SpecCard;
 import com.refinements.visualizer.card.model.SpecFormat;
 import com.refinements.visualizer.connection.Connection;
 import com.refinements.visualizer.connection.ConnectionApi;
@@ -51,7 +51,7 @@ class CanvasServiceTest {
     }
 
     private static SpecCard card(String title) {
-        SpecCard c = new SpecCard(SourceType.PASTE, null, NOW);
+        SpecCard c = SpecCard.create(java.util.UUID.randomUUID(), SourceType.PASTE, null, NOW);
         c.applyParsed(title, "1", SpecFormat.OPENAPI_3_0, "x", "h-" + title, List.of(), NOW);
         return c;
     }

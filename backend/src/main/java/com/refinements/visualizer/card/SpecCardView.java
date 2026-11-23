@@ -18,20 +18,4 @@ public record SpecCardView(
         Instant lastSyncAt,
         SyncStatus lastSyncStatus,
         List<ParsedEndpoint> endpoints,
-        Instant createdAt) {
-
-    static SpecCardView from(SpecCard c) {
-        return new SpecCardView(
-                c.getId(),
-                c.getTitle(),
-                c.getApiVersion(),
-                c.getSpecFormat(),
-                c.getSourceType(),
-                c.getSourceUrl(),
-                c.getContentHash(),
-                c.getLastSyncAt(),
-                c.getLastSyncStatus(),
-                List.copyOf(c.getEndpoints()),
-                c.getCreatedAt());
-    }
-}
+        Instant createdAt) {}
