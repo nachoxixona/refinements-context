@@ -228,19 +228,19 @@ inbound port; plain domain + `*Entity`/`*Mapper` in every module; root package f
 
 ### scenario (domain split) and canvas tidy-up
 
-- [ ] T052 [US2] Restructure scenario (data-model.md scenario):
+- [X] T052 [US2] Restructure scenario (data-model.md scenario):
   - `B/scenario/domain/`: the `model/*` records, `ScenarioValidator` and a plain `Scenario`.
   - `adapter/out/persistence/SavedScenarioEntity.java` with the same JSON columns, plus a repository and a mapper.
   - The `model/*` records must carry no Jackson annotations; if any have them (for JSON column mapping), move that mapping to the persistence adapter (T056).
   - Update any `T/it/*` setup that uses the scenario entity (assertions unchanged).
   - `application/ScenarioService.java` with `port/out/ScenarioStore` and `port/out/Baseline`, whose adapter `adapter/out/canvas/` calls `CanvasApi.index()`.
   - `adapter/in/web/ScenarioController.java` and the `dto/` package.
-- [ ] T053 [P] [US2] Add `T/scenario/domain/ScenarioDomainTest.java`. It checks that `ScenarioValidator` reports orphans and drift against a hand-built `BaselineIndex`, and that saving never calls `Revision`. No Spring.
-- [ ] T054 [US2] Tidy up canvas:
+- [X] T053 [P] [US2] Add `T/scenario/domain/ScenarioDomainTest.java`. It checks that `ScenarioValidator` reports orphans and drift against a hand-built `BaselineIndex`, and that saving never calls `Revision`. No Spring.
+- [X] T054 [US2] Tidy up canvas:
   - `B/canvas/application/CanvasService.java` (implements `CanvasApi`)
   - `adapter/in/web/CanvasController.java` and `adapter/in/web/dto/*`, with names unchanged
   - Move `T/canvas/CanvasServiceTest.java` with imports updated.
-- [ ] T055 🔖 [US2] Commit "005: scenario and canvas — ports and adapters".
+- [X] T055 🔖 [US2] Commit "005: scenario and canvas — ports and adapters".
 
 ### Enforce the layout
 

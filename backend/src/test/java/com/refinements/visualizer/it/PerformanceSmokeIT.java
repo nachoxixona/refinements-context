@@ -2,8 +2,8 @@ package com.refinements.visualizer.it;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.refinements.visualizer.canvas.CanvasService;
-import com.refinements.visualizer.canvas.dto.CanvasResponse;
+import com.refinements.visualizer.canvas.application.port.in.CanvasUseCases;
+import com.refinements.visualizer.canvas.domain.CanvasResponse;
 import com.refinements.visualizer.card.SourceType;
 import com.refinements.visualizer.card.application.port.in.SpecCardUseCases;
 import com.refinements.visualizer.microservice.application.port.in.MicroserviceUseCases;
@@ -26,7 +26,7 @@ class PerformanceSmokeIT extends PostgresIntegrationTest {
     MicroserviceUseCases microservices;
 
     @Autowired
-    CanvasService canvasService;
+    CanvasUseCases canvasService;
 
     static String syntheticSpec(int i) {
         StringBuilder sb = new StringBuilder("openapi: 3.0.3\ninfo:\n  title: Synthetic ")

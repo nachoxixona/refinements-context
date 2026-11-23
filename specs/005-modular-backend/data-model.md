@@ -65,7 +65,7 @@ module's API or SPI.
   - `Revision`
 
 ### scenario
-- **Domain** `scenario.domain.Scenario`, which holds the `ScenarioContent` model records (`Proposed*`, `AddedEndpoint`, `AddedField`, `BaselineRef`, `ScenarioRemovals`, `ConnectionChange`, `SimpleField`). These are already plain records, so they move unchanged into `domain/`. `ScenarioValidator` is domain logic that takes a `BaselineIndex`.
+- **Domain** `scenario.domain.Scenario` (plain; `version` is assigned by the store), next to the `ScenarioContent` model records (`Proposed*`, `AddedEndpoint`, `AddedField`, `BaselineRef`, `ScenarioRemovals`, `ConnectionChange`, `SimpleField`). These are already plain records, so they move unchanged into `domain/`. `ScenarioValidator` is plain domain logic (no Spring bean) that takes a `BaselineIndex`. The records keep Swagger `@Schema` and Bean Validation annotations because the REST adapter accepts and returns them as-is; the scenario document parsing (formatVersion, Jackson, Bean Validation) moved to the web adapter.
 - **Persistence** `SavedScenarioEntity`, which keeps today's JSON columns for content and baselineRef.
 - **Other outbound ports**: `Baseline`, an adapter that calls `canvas.CanvasApi.index()`.
 

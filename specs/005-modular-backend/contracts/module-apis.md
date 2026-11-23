@@ -128,6 +128,14 @@ Template rules (fixed after reviewing the note module, 2026-11-23):
   store before changing and saving it; saving copies *every* field onto the row.
 - **Published rules**: a rule another module must apply identically (e.g. ownership limits used by the connections
   document reader) is published at the root as a framework-free class (`microservice.OwnershipRules`).
+- **Records returned or accepted as-is**: value records a use case hands straight to the REST adapter (scenario
+  content, `Orphan`, `ConnectionsDocumentChanges`, the canvas read model) live in `domain/` and keep their Swagger
+  `@Schema` names and Bean Validation constraints, instead of being mirrored in `adapter/in/web`. The domain-purity
+  rule forbids JPA, Spring web/data and Jackson, not these documentation and validation annotations.
+- **Query modules**: canvas only composes other modules' views, so its application service calls their `*Api`
+  interfaces directly instead of wrapping each in an outbound port. Its `domain/` is the read model
+  (`CanvasResponse`, `CanvasNode`, …). Modules that change data (scenario included) reach other modules through
+  outbound ports (scenario: `Baseline` → `CanvasApi.index()`).
 - **Unique adapter class names**: Spring bean names come from the simple class name and are global, so an adapter
   class name must be unique across modules (connection's revision adapter is `ConnectionRevisionAdapter`, because
   microservice already has a `RevisionAdapter`). Two equal names fail every integration test at startup.
