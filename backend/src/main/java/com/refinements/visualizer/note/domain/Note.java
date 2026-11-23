@@ -1,6 +1,8 @@
-package com.refinements.visualizer.note;
+package com.refinements.visualizer.note.domain;
 
+import com.refinements.visualizer.note.NoteKind;
 import com.refinements.visualizer.shared.XYPosition;
+import com.refinements.visualizer.shared.errors.BadRequestException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -73,5 +75,16 @@ public class Note {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    /** Note.text rule (spec 004 data-model.md §3): 1–2000 characters, not blank. */
+    public static String checkText(String text) {
+        if (text == null || text.isBlank()) {
+            throw new BadRequestException("A note needs some text.");
+        }
+        if (text.length() > MAX_TEXT) {
+            throw new BadRequestException("Notes are at most " + MAX_TEXT + " characters.");
+        }
+        return text;
     }
 }

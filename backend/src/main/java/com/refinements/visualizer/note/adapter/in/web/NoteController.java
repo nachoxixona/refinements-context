@@ -1,5 +1,10 @@
-package com.refinements.visualizer.note;
+package com.refinements.visualizer.note.adapter.in.web;
 
+import com.refinements.visualizer.note.NoteDto;
+import com.refinements.visualizer.note.application.port.in.CreateNote;
+import com.refinements.visualizer.note.application.port.in.DeleteNote;
+import com.refinements.visualizer.note.application.port.in.ListNotes;
+import com.refinements.visualizer.note.application.port.in.UpdateNote;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -19,31 +24,37 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/notes")
 public class NoteController {
 
-    private final NoteService service;
+    private final ListNotes listNotes;
+    private final CreateNote createNote;
+    private final UpdateNote updateNote;
+    private final DeleteNote deleteNote;
 
-    public NoteController(NoteService service) {
-        this.service = service;
+    NoteController(ListNotes listNotes, CreateNote createNote, UpdateNote updateNote, DeleteNote deleteNote) {
+        this.listNotes = listNotes;
+        this.createNote = createNote;
+        this.updateNote = updateNote;
+        this.deleteNote = deleteNote;
     }
 
     @GetMapping
     public List<NoteDto> list() {
-        return service.list();
+        return listNotes.list();
     }
 
     @PostMapping
     public ResponseEntity<NoteDto> create(@Valid @RequestBody NoteWrite.Create write) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.create(write.text(), write.kind(), write.position()));
+                .body(createNote.create(write.text(), write.kind(), write.position()));
     }
 
     @PatchMapping("/{noteId}")
     public NoteDto update(@PathVariable UUID noteId, @Valid @RequestBody NoteWrite patch) {
-        return service.update(noteId, patch);
+        return updateNote.update(noteId, new UpdateNote.NoteChanges(patch.text(), patch.kind(), patch.position()));
     }
 
     @DeleteMapping("/{noteId}")
     public ResponseEntity<Void> delete(@PathVariable UUID noteId) {
-        service.delete(noteId);
+        deleteNote.delete(noteId);
         return ResponseEntity.noContent().build();
     }
 }

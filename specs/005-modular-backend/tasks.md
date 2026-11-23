@@ -139,15 +139,15 @@ These steps move packages only; behaviour does not change.
 
 ### note — the template (FR-018)
 
-- [ ] T033 [US2] Restructure `B/note/` following plan.md "Source Code":
+- [X] T033 [US2] Restructure `B/note/` following plan.md "Source Code":
   - `domain/Note.java` (the entity stays the model, data-model.md "Small modules")
   - `application/NoteService.java` with `port/in/` use-case interfaces (`ListNotes`, `CreateNote`, `UpdateNote`, `DeleteNote`) and `port/out/NoteStore.java`
   - `adapter/in/web/NoteController.java`
   - `adapter/out/persistence/NoteJpaRepository.java` and `NoteStoreAdapter.java`
 
   Add package-info annotations: `@Application`, `@PrimaryPort`, `@SecondaryPort`, `@PrimaryAdapter`, `@SecondaryAdapter` (R8). `NoteApi`, `NoteDto`, `NoteWrite` and `NoteKind` stay at the root. Keep `NoteWrite` at the root only if the controller is its only user; otherwise move it to `adapter/in/web`.
-- [ ] T034 [P] [US2] Add `T/note/NoteModuleTest.java` with `@ApplicationModuleTest` and Testcontainers Postgres (reuse the `@ServiceConnection` pattern from `T/it/PostgresIntegrationTest.java`). It creates, lists and deletes a note through the use cases.
-- [ ] T035 🔖 [US2] Commit "005: note module — ports and adapters (template)".
+- [X] T034 [P] [US2] Add `T/note/NoteModuleTest.java` with `@ApplicationModuleTest` and Testcontainers Postgres (reuse the `@ServiceConnection` pattern from `T/it/PostgresIntegrationTest.java`). It creates, lists and deletes a note through the use cases.
+- [X] T035 🔖 [US2] Commit "005: note module — ports and adapters (template)".
 
 ### workspace, layout
 
