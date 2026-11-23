@@ -25,7 +25,7 @@ All Technical Context unknowns are resolved below. Each entry: **Decision**, **R
 
 ## R4. Breaking microservice ↔ connection
 
-- **Decision**: `microservice.spi.ConnectionEndsPort` is implemented by `connection.adapter.out.microservice.ConnectionEndsAdapter`:
+- **Decision**: `microservice.spi.ConnectionEndsPort` is implemented by `connection.adapter.in.microservice.ConnectionEndsAdapter` (delegating to `ConnectionEndsService`):
   - `List<UUID> detach(UUID microserviceId)`: keeps the stored end names, nulls the ids, flushes, and returns the affected connection ids (today's `delete` loop).
   - `void renamed(UUID microserviceId, String newName)`: updates the end names (today's `update` loop).
   - `List<UUID> reattach(UUID microserviceId, String name, String nameNormalized)`: today's `reattach`.
@@ -41,7 +41,7 @@ All Technical Context unknowns are resolved below. Each entry: **Decision**, **R
 
 - **Decision**: card is the lower module.
   - Microservice calls `card.SpecCardApi.exists(UUID)` when linking.
-  - `card.spi.CardLinkPort` is implemented by `microservice.adapter.out.card.CardLinkAdapter`:
+  - `card.spi.CardLinkPort` is implemented by `microservice.adapter.in.card.CardLinkAdapter` (delegating to `CardLinkService`):
     - `Optional<UUID> linkedMicroservice(UUID cardId)`
     - `Map<UUID, UUID> linksByCard()`
     - `void unlinkCard(UUID cardId)`
@@ -78,7 +78,7 @@ All Technical Context unknowns are resolved below. Each entry: **Decision**, **R
 - **Decision**: Use jMolecules (`org.jmolecules:jmolecules-hexagonal-architecture`, plus `jmolecules-archunit` in test scope). Put package-level annotations in each module:
   - `@Application` on `application`
   - `@PrimaryPort` on `application.port.in`
-  - `@SecondaryPort` on `application.port.out` and `spi`
+  - `@SecondaryPort` on `application.port.out` (not on `spi`: its implementations live in another module's `adapter/in`, and the jMolecules rules that Spring Modulith runs forbid a primary adapter depending on a secondary port)
   - `@PrimaryAdapter` on `adapter.in`
   - `@SecondaryAdapter` on `adapter.out`
 

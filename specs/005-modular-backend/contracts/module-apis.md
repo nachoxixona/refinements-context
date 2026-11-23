@@ -86,9 +86,9 @@ change ownership or direction.
   - Implemented by connection.
 
 ### connection
-- `ConnectionApi`: `List<ConnectionDto> findAll()`.
-- `FlowApi`: `List<FlowDto> findAll()`.
-- Published records and helpers: `ConnectionDto`, `FlowDto`, `ConnectionKind`, `FlowColor`, `ConnectionKey`, `ConnectionEndpoints` (match keys, used by canvas and scenario).
+- `ConnectionApi`: `List<KeyedConnection> findAll()`, where `KeyedConnection` is a `ConnectionView` plus its stored `ConnectionKey`.
+- `FlowApi`: `List<FlowView> findAllOrdered()`.
+- Published records and helpers: `ConnectionView`, `KeyedConnection`, `FlowView`, `ConnectionKind`, `FlowColor`, `ConnectionKey`, `ConnectionEndpoints` (match keys, used by canvas and scenario). The REST shapes `ConnectionDto` ("Connection") and `FlowDto` ("Flow") live in `adapter/in/web`; `CanvasResponse` refs those schemas.
 
 ### layout
 - `LayoutApi`: `LayoutView current()`, where `LayoutView` holds positions, collapsedCards and version.
@@ -110,7 +110,9 @@ Template rules (fixed after reviewing the note module, 2026-11-23):
   that response points at the owning module's published schema with
   `@ArraySchema(schema = @Schema(ref = "#/components/schemas/<Name>"))`, so the OpenAPI stays identical.
 - **One inbound port per module**: `application/port/in/<Module>UseCases` (commands as nested records). The
-  application service implements both `<Module>Api` and `<Module>UseCases` and is package-private.
+  application service implements both `<Module>Api` and `<Module>UseCases` and is package-private. A module with
+  several aggregates has one `*UseCases` per aggregate (connection: `ConnectionUseCases`, `FlowUseCases`,
+  `ConnectionsDocumentUseCases`), each implemented by its own service.
 - **Plain domain in every module** (small ones too): `domain/` has no JPA, Spring or Jackson. Persistence has
   `<Name>Entity` (package-private fields), `<Name>Mapper`, a package-private Spring Data repository and a
   `<Name>StoreAdapter` that copies domain state onto the managed entity (research R7).
@@ -119,15 +121,23 @@ Template rules (fixed after reviewing the note module, 2026-11-23):
   to an inbound port of A. That port is implemented by a **separate, small application service** that depends only
   on A's store (e.g. `CardLinkService`), never by A's main service: A's main service calls B, and B calls back
   into A, so sharing one bean makes a runtime bean cycle even though compile-time dependencies are acyclic.
+  The `spi` packages themselves carry **no** jMolecules port annotation: Spring Modulith runs the jMolecules
+  hexagonal rules, which forbid a `@PrimaryAdapter` depending on a `@SecondaryPort`.
+- **Stores hand out copies**: a domain object loaded before another use case changed the same row (for example the
+  connections document apply, where creating a microservice reattaches dangling ends) is stale. Reload it from the
+  store before changing and saving it; saving copies *every* field onto the row.
 - **Published rules**: a rule another module must apply identically (e.g. ownership limits used by the connections
   document reader) is published at the root as a framework-free class (`microservice.OwnershipRules`).
+- **Unique adapter class names**: Spring bean names come from the simple class name and are global, so an adapter
+  class name must be unique across modules (connection's revision adapter is `ConnectionRevisionAdapter`, because
+  microservice already has a `RevisionAdapter`). Two equal names fail every integration test at startup.
 - **Check**: diff `/v3/api-docs/api` and `GET /api/canvas` against the baseline after every module.
 
 ```text
 <module>/
   package-info.java          @ApplicationModule(allowedDependencies = …)
   <Module>Api.java, *View records, enums   ← public API (root package), framework-free
-  spi/                       @NamedInterface("spi") — ports another module implements (card, microservice only)
+  spi/                       @NamedInterface("spi") — ports another module implements (card, microservice only); no port annotation
   model/                     @NamedInterface("model") — card only
   domain/                    business model and rules
   application/               @Application — use-case services implementing port.in, and the <Module>Api facade
@@ -136,5 +146,6 @@ Template rules (fixed after reviewing the note module, 2026-11-23):
   adapter/
     in/web/                  @PrimaryAdapter — controllers, request and response DTOs (@Schema names)
     out/persistence/         @SecondaryAdapter — *Entity, *Mapper, Spring Data repo, *StoreAdapter (every module)
-    out/<other>/             @SecondaryAdapter — e.g. card: fetcher, parser; connection: microservice SPI impl
+    in/<other>/              @PrimaryAdapter — implementations of another module's SPI (e.g. connection: ConnectionEndsPort)
+    out/<other>/             @SecondaryAdapter — e.g. card: fetcher, parser; connection: document codec, microservice API
 ```

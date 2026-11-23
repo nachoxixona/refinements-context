@@ -6,5 +6,5 @@ import java.util.List;
 public interface ConnectionApi {
 
     /** Every connection, attached or dangling, in no particular order. */
-    List<ConnectionView> findAll();
+    List<KeyedConnection> findAll();
 }

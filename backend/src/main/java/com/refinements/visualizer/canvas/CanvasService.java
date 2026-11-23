@@ -11,12 +11,12 @@ import com.refinements.visualizer.card.SpecCardApi;
 import com.refinements.visualizer.card.SpecCardView;
 import com.refinements.visualizer.card.model.ParsedEndpoint;
 import com.refinements.visualizer.connection.ConnectionApi;
-import com.refinements.visualizer.connection.ConnectionDto;
 import com.refinements.visualizer.connection.ConnectionEndpoints;
 import com.refinements.visualizer.connection.ConnectionKey;
 import com.refinements.visualizer.connection.ConnectionView;
 import com.refinements.visualizer.connection.FlowApi;
-import com.refinements.visualizer.connection.FlowDto;
+import com.refinements.visualizer.connection.FlowView;
+import com.refinements.visualizer.connection.KeyedConnection;
 import com.refinements.visualizer.layout.LayoutApi;
 import com.refinements.visualizer.layout.LayoutKeys;
 import com.refinements.visualizer.layout.LayoutView;
@@ -143,13 +143,13 @@ public class CanvasService implements CanvasApi {
             }
         }
         List<CanvasEdge> edges = new ArrayList<>();
-        List<ConnectionDto> dangling = new ArrayList<>();
-        List<ConnectionView> all = new ArrayList<>(connections.findAll());
-        all.sort(Comparator.comparing((ConnectionView v) -> v.key().source())
+        List<ConnectionView> dangling = new ArrayList<>();
+        List<KeyedConnection> all = new ArrayList<>(connections.findAll());
+        all.sort(Comparator.comparing((KeyedConnection v) -> v.key().source())
                 .thenComparing(v -> v.key().target())
                 .thenComparing(v -> v.key().name()));
-        for (ConnectionView v : all) {
-            ConnectionDto f = v.connection();
+        for (KeyedConnection v : all) {
+            ConnectionView f = v.connection();
             if (f.dangling()) {
                 dangling.add(f);
             } else {
@@ -169,7 +169,7 @@ public class CanvasService implements CanvasApi {
                                 f.step())));
             }
         }
-        List<FlowDto> flowDtos = flows.findAllOrdered();
+        List<FlowView> flowDtos = flows.findAllOrdered();
         return new CanvasResponse(
                 List.copyOf(nodes),
                 List.copyOf(edges),
@@ -200,7 +200,7 @@ public class CanvasService implements CanvasApi {
         Set<UUID> flowIds = new HashSet<>();
         flows.findAllOrdered().forEach(g -> flowIds.add(g.id()));
         Map<UUID, BaselineIndex.ConnectionRef> connectionRefs = new HashMap<>();
-        for (ConnectionView v : connections.findAll()) {
+        for (KeyedConnection v : connections.findAll()) {
             ConnectionKey k = v.key();
             connectionRefs.put(v.connection().id(), new BaselineIndex.ConnectionRef(k.source(), k.target(), k.name()));
         }
@@ -214,7 +214,7 @@ public class CanvasService implements CanvasApi {
                 revision.current());
     }
 
-    private static boolean endpointMissing(ConnectionDto f, Map<UUID, Set<String>> targetEndpoints) {
+    private static boolean endpointMissing(ConnectionView f, Map<UUID, Set<String>> targetEndpoints) {
         if (f.endpoint() == null) {
             return false;
         }

@@ -1,14 +1,21 @@
 package com.refinements.visualizer.connection;
 
-/**
- * A connection as other modules see it: the published {@link ConnectionDto} plus its stored identity key (normalized
- * source, target and name; research R3), used for ordering and baseline checks.
- */
-public record ConnectionView(ConnectionDto connection, ConnectionKey key) {
+import java.util.UUID;
 
-    static ConnectionView from(Connection f) {
-        return new ConnectionView(
-                ConnectionDto.from(f),
-                new ConnectionKey(f.getSourceNameNormalized(), f.getTargetNameNormalized(), f.getNameNormalized()));
-    }
-}
+/**
+ * A connection as other modules see it. Same fields as the published REST schema {@code Connection}; a connection
+ * is dangling when either end has no microservice id (its stored name is kept).
+ */
+public record ConnectionView(
+        UUID id,
+        String name,
+        ConnectionKind kind,
+        String description,
+        UUID flowId,
+        String endpoint,
+        Integer step,
+        UUID sourceId,
+        UUID targetId,
+        String sourceName,
+        String targetName,
+        boolean dangling) {}

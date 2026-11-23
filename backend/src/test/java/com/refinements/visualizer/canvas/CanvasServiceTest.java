@@ -11,13 +11,11 @@ import com.refinements.visualizer.card.SpecCardApi;
 import com.refinements.visualizer.card.SpecCardView;
 import com.refinements.visualizer.card.domain.SpecCard;
 import com.refinements.visualizer.card.model.SpecFormat;
-import com.refinements.visualizer.connection.Connection;
 import com.refinements.visualizer.connection.ConnectionApi;
-import com.refinements.visualizer.connection.ConnectionDto;
-import com.refinements.visualizer.connection.ConnectionKey;
 import com.refinements.visualizer.connection.ConnectionKind;
-import com.refinements.visualizer.connection.ConnectionView;
 import com.refinements.visualizer.connection.FlowApi;
+import com.refinements.visualizer.connection.KeyedConnection;
+import com.refinements.visualizer.connection.domain.Connection;
 import com.refinements.visualizer.layout.LayoutApi;
 import com.refinements.visualizer.layout.LayoutView;
 import com.refinements.visualizer.microservice.MicroserviceApi;
@@ -96,10 +94,8 @@ class CanvasServiceTest {
                 c.getCreatedAt());
     }
 
-    private static ConnectionView view(Connection f) {
-        return new ConnectionView(
-                ConnectionDto.from(f),
-                new ConnectionKey(f.getSourceNameNormalized(), f.getTargetNameNormalized(), f.getNameNormalized()));
+    private static KeyedConnection view(Connection f) {
+        return new KeyedConnection(f.view(), f.key());
     }
 
     @Test

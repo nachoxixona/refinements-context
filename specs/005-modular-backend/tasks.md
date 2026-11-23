@@ -210,21 +210,21 @@ inbound port; plain domain + `*Entity`/`*Mapper` in every module; root package f
 
 ### connection (domain split, incl. connections document)
 
-- [ ] T048 [US2] Split connection into domain and persistence (data-model.md connection):
+- [X] T048 [US2] Split connection into domain and persistence (data-model.md connection):
   - Create the plain `B/connection/domain/Connection.java` and `Flow.java` with their behaviour: `setSource`, `setTarget`, `isDangling`, and the step rules from `ConnectionSteps`.
   - Move the Jackson-free document logic into `B/connection/domain/document/`: `ConnectionsDocumentModel`, `ConnectionsDocumentDiff` and `ConnectionsDocumentChanges`. Move the JSON-handling classes (`ConnectionsDocumentReader`, `ConnectionsDocumentWriter`, `JsonLocator`) to `B/connection/adapter/out/document/` behind `B/connection/application/port/out/DocumentCodec.java` (`read(text) → model or DocumentErrors`, `write(model) → text`). The domain must not import Jackson (research R8, T056). Error locations and messages must stay identical.
   - Widen package-private members only inside internal packages (visibility rule).
   - Update `T/it/*` setup that uses `Connection`/`ConnectionRepository` to `ConnectionEntity`/`ConnectionJpaRepository` (assertions unchanged).
   - Add `adapter/out/persistence/ConnectionEntity.java`, `FlowEntity.java`, the JPA repositories (keep `findDanglingByName` and `findBySourceIdOrTargetId`), the mappers and `ConnectionStore`/`FlowStore` adapters with explicit `flush()`.
-- [ ] T049 [US2] Restructure connection's application and adapter layers:
+- [X] T049 [US2] Restructure connection's application and adapter layers:
   - `B/connection/application/`: `ConnectionService`, `FlowService` and `ConnectionsDocumentService` implement `port/in` and `ConnectionApi`/`FlowApi`.
   - `port/out/MicroserviceDirectory` has an adapter at `adapter/out/microservice/MicroserviceDirectoryAdapter.java` that calls `MicroserviceApi`.
   - Move `ConnectionEndsAdapter` → `adapter/in/microservice/` (`@PrimaryAdapter`, template rule "SPI implementations are inbound adapters") and make it delegate to a `port/in/ConnectionEnds` implemented by a separate `ConnectionEndsService` that depends only on `ConnectionStore` and `Clock` (no `MicroserviceApi`, to avoid a runtime bean cycle).
   - The controllers (`ConnectionController`, `FlowController`, `ConnectionsDocumentController`), `ConnectionsDocumentApi` and the request DTOs go to `adapter/in/web/`.
-- [ ] T050 [P] [US2] Add the domain tests:
+- [X] T050 [P] [US2] Add the domain tests:
   - Move `ConnectionsDocumentDiffTest` to `T/connection/domain/document/` and `ConnectionsDocumentValidatorTest`, `ConnectionsDocumentWriterTest` and `JsonLocatorTest` to `T/connection/adapter/out/document/`, with unchanged assertions.
   - Add `T/connection/domain/ConnectionDomainTest.java` covering dangling ends, reattach by name and the step rules with in-memory store fakes.
-- [ ] T051 🔖 [US2] Commit "005: connection module — domain split, ports and adapters".
+- [X] T051 🔖 [US2] Commit "005: connection module — domain split, ports and adapters".
 
 ### scenario (domain split) and canvas tidy-up
 

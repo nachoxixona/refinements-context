@@ -6,5 +6,5 @@ import java.util.List;
 public interface FlowApi {
 
     /** All flows ordered by normalized name. */
-    List<FlowDto> findAllOrdered();
+    List<FlowView> findAllOrdered();
 }

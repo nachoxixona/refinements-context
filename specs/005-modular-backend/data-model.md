@@ -53,10 +53,10 @@ module's API or SPI.
 
 ### connection
 - **Domain**:
-  - `connection.domain.Connection`. State: id, name, nameNormalized, kind, description, flowId, sourceId, targetId, sourceName, targetName, the two normalized names, endpoint, step, timestamps. Behaviour: `setSource`, `setTarget`, `isDangling`, the patch rules.
+  - `connection.domain.Connection`. State: id, name, nameNormalized, kind, description, flowId, sourceId, targetId, sourceName, targetName, the two normalized names, endpoint, step, timestamps. Behaviour: `setSource`, `setTarget`, `detach`, `endRenamed`, `reattach`, `isDangling`, `key`. Value rules in `ConnectionRules`, step rules in `ConnectionSteps`.
   - `connection.domain.Flow`
   - `ConnectionKey`, `ConnectionEndpoints`, `FlowColor` as values.
-  - Connections-document model, diff and changes (`ConnectionsDocumentModel`, `ConnectionsDocumentDiff`, `ConnectionsDocumentChanges`) are domain logic with no Jackson. They work on `MicroserviceView` instead of the `Microservice` entity.
+  - Connections-document model, diff, changes and export content (`ConnectionsDocumentModel`, `ConnectionsDocumentDiff`, `ConnectionsDocumentChanges`, `ConnectionsDocument`, `ConnectionsDocumentExport`) are domain logic with no Jackson. They work on `MicroserviceView` instead of the `Microservice` entity. `ConnectionsDocumentChanges` keeps its Swagger `@Schema` names because it is returned as-is by preview/apply.
   - JSON reading, validation-with-locations and writing (`ConnectionsDocumentReader`, `ConnectionsDocumentWriter`, `JsonLocator`) live in `adapter/out/document/` behind the `DocumentCodec` outbound port.
 - **Persistence** `ConnectionEntity`, `FlowEntity`, and their repositories (`findDanglingByName`, `findBySourceIdOrTargetId`, `findAllByOrderByNameNormalizedAsc`).
 - **Other outbound ports**:
@@ -82,9 +82,9 @@ and a store adapter in `adapter/out/persistence/`.
 
 ## Read records crossing module boundaries
 
-The read records (`SpecCardView`, `MicroserviceView`, `ConnectionDto`, `FlowDto`, `NoteDto`, `LayoutView`, `BaselineIndex`) are immutable Java records. Each one is built inside the owning module's transaction, so it never carries a lazy-loaded proxy.
+The read records (`SpecCardView`, `MicroserviceView`, `ConnectionView`/`KeyedConnection`, `FlowView`, `NoteView`, `LayoutView`, `BaselineIndex`) are immutable Java records. Each one is built inside the owning module's transaction, so it never carries a lazy-loaded proxy.
 
-`ConnectionDto`, `FlowDto` and `NoteDto` are also the REST response shapes. They keep their simple names so that the springdoc schema names, and therefore `ContractConformanceIT`, do not change.
+The REST response shapes (`ConnectionDto`, `FlowDto`, `NoteDto`) live in each module's `adapter/in/web` and keep their `@Schema` names, so the springdoc schema names, and therefore `ContractConformanceIT`, do not change. `CanvasResponse` embeds the views and refs those schemas.
 
 ## Behaviours whose ordering must be preserved
 
