@@ -1,7 +1,7 @@
 package com.refinements.visualizer.canvas.dto;
 
-import com.refinements.visualizer.ingestion.model.Field;
-import com.refinements.visualizer.ingestion.model.FieldLocation;
+import com.refinements.visualizer.card.model.Field;
+import com.refinements.visualizer.card.model.FieldLocation;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "Field")

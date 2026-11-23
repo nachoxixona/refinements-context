@@ -1,8 +1,8 @@
 package com.refinements.visualizer.note;
 
-import com.refinements.visualizer.common.XYPosition;
-import com.refinements.visualizer.common.errors.BadRequestException;
-import com.refinements.visualizer.common.errors.NotFoundException;
+import com.refinements.visualizer.shared.XYPosition;
+import com.refinements.visualizer.shared.errors.BadRequestException;
+import com.refinements.visualizer.shared.errors.NotFoundException;
 import java.time.Clock;
 import java.util.List;
 import java.util.UUID;

@@ -1,8 +1,8 @@
 package com.refinements.visualizer.card;
 
-import com.refinements.visualizer.common.errors.ParseError;
-import com.refinements.visualizer.ingestion.model.ParsedEndpoint;
-import com.refinements.visualizer.ingestion.model.SpecFormat;
+import com.refinements.visualizer.card.model.ParsedEndpoint;
+import com.refinements.visualizer.card.model.SpecFormat;
+import com.refinements.visualizer.shared.errors.ParseError;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

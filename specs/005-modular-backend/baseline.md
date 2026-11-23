@@ -1,6 +1,6 @@
 # Baseline (before 005) — 2026-11-23
 
-`./mvnw verify` on the untouched code: **green**. 20 suites, 89 tests, 0 failures, 0 skipped.
+`./mvnw verify` on the untouched code: **green**. 20 suites, 85 tests, 0 failures, 0 skipped.
 
 ## Timings (SC-006 reference)
 

@@ -1,8 +1,5 @@
 package com.refinements.visualizer.connection;
 
-import com.refinements.visualizer.common.errors.BadRequestException;
-import com.refinements.visualizer.common.errors.ConflictException;
-import com.refinements.visualizer.common.errors.NotFoundException;
 import com.refinements.visualizer.connection.dto.ConnectionCreate;
 import com.refinements.visualizer.connection.dto.ConnectionDto;
 import com.refinements.visualizer.connection.dto.ConnectionMutation;
@@ -10,6 +7,10 @@ import com.refinements.visualizer.connection.dto.ConnectionPatch;
 import com.refinements.visualizer.connection.dto.ReassignRequest;
 import com.refinements.visualizer.microservice.Microservice;
 import com.refinements.visualizer.microservice.MicroserviceRepository;
+import com.refinements.visualizer.shared.Names;
+import com.refinements.visualizer.shared.errors.BadRequestException;
+import com.refinements.visualizer.shared.errors.ConflictException;
+import com.refinements.visualizer.shared.errors.NotFoundException;
 import com.refinements.visualizer.workspace.WorkspaceRevision;
 import java.time.Clock;
 import java.time.Instant;

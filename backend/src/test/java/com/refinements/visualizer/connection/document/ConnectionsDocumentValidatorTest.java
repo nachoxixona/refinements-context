@@ -3,11 +3,11 @@ package com.refinements.visualizer.connection.document;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.refinements.visualizer.common.VisualizerProperties;
-import com.refinements.visualizer.common.errors.ConnectionsDocumentInvalidException;
-import com.refinements.visualizer.common.errors.DocumentError;
-import com.refinements.visualizer.common.errors.DocumentError.Kind;
 import com.refinements.visualizer.connection.ConnectionKind;
+import com.refinements.visualizer.shared.VisualizerProperties;
+import com.refinements.visualizer.shared.errors.ConnectionsDocumentInvalidException;
+import com.refinements.visualizer.shared.errors.DocumentError;
+import com.refinements.visualizer.shared.errors.DocumentError.Kind;
 import com.refinements.visualizer.support.TestSpecs;
 import java.io.IOException;
 import java.io.UncheckedIOException;

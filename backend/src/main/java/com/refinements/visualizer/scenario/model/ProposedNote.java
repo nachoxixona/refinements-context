@@ -1,7 +1,7 @@
 package com.refinements.visualizer.scenario.model;
 
-import com.refinements.visualizer.common.XYPosition;
 import com.refinements.visualizer.note.NoteKind;
+import com.refinements.visualizer.shared.XYPosition;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

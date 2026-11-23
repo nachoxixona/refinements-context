@@ -1,16 +1,16 @@
 package com.refinements.visualizer.microservice;
 
 import com.refinements.visualizer.card.SpecCardRepository;
-import com.refinements.visualizer.common.errors.BadRequestException;
-import com.refinements.visualizer.common.errors.ConflictException;
-import com.refinements.visualizer.common.errors.NotFoundException;
 import com.refinements.visualizer.connection.Connection;
 import com.refinements.visualizer.connection.ConnectionRepository;
-import com.refinements.visualizer.connection.Names;
 import com.refinements.visualizer.microservice.dto.MicroserviceDeleted;
 import com.refinements.visualizer.microservice.dto.MicroserviceDto;
 import com.refinements.visualizer.microservice.dto.MicroserviceMutation;
 import com.refinements.visualizer.microservice.dto.MicroservicePatch;
+import com.refinements.visualizer.shared.Names;
+import com.refinements.visualizer.shared.errors.BadRequestException;
+import com.refinements.visualizer.shared.errors.ConflictException;
+import com.refinements.visualizer.shared.errors.NotFoundException;
 import com.refinements.visualizer.workspace.WorkspaceRevision;
 import java.time.Clock;
 import java.time.Instant;

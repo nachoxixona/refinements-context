@@ -1,5 +1,6 @@
 package com.refinements.visualizer.connection;
 
+import com.refinements.visualizer.shared.Names;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

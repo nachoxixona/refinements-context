@@ -1,6 +1,6 @@
 package com.refinements.visualizer.workspace;
 
-import com.refinements.visualizer.common.errors.StaleVersionException;
+import com.refinements.visualizer.shared.errors.StaleVersionException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;

@@ -2,7 +2,7 @@ package com.refinements.visualizer.canvas.dto;
 
 import com.refinements.visualizer.card.SourceType;
 import com.refinements.visualizer.card.SyncStatus;
-import com.refinements.visualizer.ingestion.model.SpecFormat;
+import com.refinements.visualizer.card.model.SpecFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;

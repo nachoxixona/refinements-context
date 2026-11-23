@@ -1,7 +1,7 @@
 package com.refinements.visualizer.canvas.dto;
 
-import com.refinements.visualizer.ingestion.model.HttpMethod;
-import com.refinements.visualizer.ingestion.model.ParsedEndpoint;
+import com.refinements.visualizer.card.model.HttpMethod;
+import com.refinements.visualizer.card.model.ParsedEndpoint;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 

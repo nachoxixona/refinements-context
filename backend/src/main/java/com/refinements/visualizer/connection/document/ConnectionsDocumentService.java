@@ -1,17 +1,17 @@
 package com.refinements.visualizer.connection.document;
 
-import com.refinements.visualizer.common.VisualizerProperties;
-import com.refinements.visualizer.common.errors.PayloadTooLargeException;
 import com.refinements.visualizer.connection.Connection;
 import com.refinements.visualizer.connection.ConnectionRepository;
 import com.refinements.visualizer.connection.FlowRepository;
 import com.refinements.visualizer.connection.FlowService;
-import com.refinements.visualizer.connection.Names;
 import com.refinements.visualizer.connection.document.ConnectionsDocumentModel.ConnectionEntry;
 import com.refinements.visualizer.connection.document.ConnectionsDocumentModel.MicroserviceEntry;
 import com.refinements.visualizer.microservice.Microservice;
 import com.refinements.visualizer.microservice.MicroserviceRepository;
 import com.refinements.visualizer.microservice.MicroserviceService;
+import com.refinements.visualizer.shared.Names;
+import com.refinements.visualizer.shared.VisualizerProperties;
+import com.refinements.visualizer.shared.errors.PayloadTooLargeException;
 import com.refinements.visualizer.workspace.WorkspaceRevision;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;

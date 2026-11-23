@@ -3,10 +3,10 @@ package com.refinements.visualizer.connection.document;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.refinements.visualizer.connection.Connection;
-import com.refinements.visualizer.connection.Names;
 import com.refinements.visualizer.connection.document.ConnectionsDocumentModel.ConnectionEntry;
 import com.refinements.visualizer.connection.document.ConnectionsDocumentModel.MicroserviceEntry;
 import com.refinements.visualizer.microservice.Microservice;
+import com.refinements.visualizer.shared.Names;
 import com.refinements.visualizer.support.TestSpecs;
 import java.time.Instant;
 import java.util.ArrayList;

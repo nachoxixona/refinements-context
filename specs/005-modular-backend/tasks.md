@@ -42,22 +42,22 @@
 
 These steps move packages only; behaviour does not change.
 
-- [ ] T005 Update `backend/pom.xml`. Import `org.springframework.modulith:spring-modulith-bom` 1.4.x (latest patch; R1) in `dependencyManagement`. Add `spring-modulith-starter-core`, `org.jmolecules:jmolecules-hexagonal-architecture` and, in test scope, `spring-modulith-starter-test` and `org.jmolecules.integrations:jmolecules-archunit` (R8). Confirm the versions on Maven Central and that they are compatible with Boot 3.5.16.
-- [ ] T006 Create `T/ModularityTest.java`:
+- [X] T005 Update `backend/pom.xml`. Import `org.springframework.modulith:spring-modulith-bom` 1.4.x (latest patch; R1) in `dependencyManagement`. Add `spring-modulith-starter-core`, `org.jmolecules:jmolecules-hexagonal-architecture` and, in test scope, `spring-modulith-starter-test` and `org.jmolecules.integrations:jmolecules-archunit` (R8). Confirm the versions on Maven Central and that they are compatible with Boot 3.5.16.
+- [X] T006 Create `T/ModularityTest.java`:
   - `ApplicationModules.of(VisualizerApplication.class)`
   - a `verifiesModularStructure()` test that calls `modules.verify()`, marked `@Disabled("enabled in T030")`
   - a `logsViolations()` test that prints `modules.detectViolations()`
 
   Run it and paste the reported violations into the "Baseline violations" section at the end of this file.
-- [ ] T007 Move `B/common/**` into `B/shared/**`: `errors/` keeps its sub-package, and the other classes go to the `shared` root. Add `B/shared/package-info.java` with `@ApplicationModule(type = ApplicationModule.Type.OPEN, displayName = "Shared")` (R3). Update all imports in main and test code.
-- [ ] T008 Move `B/connection/Names.java` → `B/shared/Names.java` and `T/connection/NamesTest.java` → `T/shared/NamesTest.java`. Update imports (R3).
-- [ ] T009 Fold `ingestion` into `card` (R2 and data-model.md card):
+- [X] T007 Move `B/common/**` into `B/shared/**`: `errors/` keeps its sub-package, and the other classes go to the `shared` root. Add `B/shared/package-info.java` with `@ApplicationModule(type = ApplicationModule.Type.OPEN, displayName = "Shared")` (R3). Update all imports in main and test code.
+- [X] T008 Move `B/connection/Names.java` → `B/shared/Names.java` and `T/connection/NamesTest.java` → `T/shared/NamesTest.java`. Update imports (R3).
+- [X] T009 Fold `ingestion` into `card` (R2 and data-model.md card):
   - Move `B/ingestion/model/*` (`ParsedEndpoint`, `Field`, `FieldLocation`, `HttpMethod`, `SpecFormat`) and `B/ingestion/SpecKeys.java` → `B/card/model/`. Add `B/card/model/package-info.java` with `@NamedInterface("model")`.
   - Move `SpecFetcher` → `B/card/adapter/out/fetch/`.
   - Move `SpecParser`, `ParsedSpec`, `FieldFlattener` and `FieldNormalizer` → `B/card/adapter/out/parser/`.
   - Delete the empty `ingestion` package.
-- [ ] T010 [P] Move the ingestion unit tests to match T009. `SpecParserTest`, `FieldFlattenerTest` and `FieldNormalizerTest` go to `T/card/adapter/out/parser/`, and `SpecKeysTest` goes to `T/card/model/`. Assertions stay unchanged (Principle I, FR-017).
-- [ ] T011 🔖 Run `./mvnw verify`; everything must be green. Commit "005: add Modulith, shared module, fold ingestion into card".
+- [X] T010 [P] Move the ingestion unit tests to match T009. `SpecParserTest`, `FieldFlattenerTest` and `FieldNormalizerTest` go to `T/card/adapter/out/parser/`, and `SpecKeysTest` goes to `T/card/model/`. Assertions stay unchanged (Principle I, FR-017).
+- [X] T011 🔖 Run `./mvnw verify`; everything must be green. Commit "005: add Modulith, shared module, fold ingestion into card".
 
 **Checkpoint**: The `shared` and `card.model` modules exist. Two cycles and the cross-module repository reads remain.
 
@@ -300,5 +300,13 @@ T036 workspace restructure   ║  T037 layout restructure
 
 _Filled by T006 (before) and T031 (after, including the deliberate-violation check)._
 
-- Before:
+- Before (T006, `ModularityTest#logsViolations`, 235 violations):
+  - 2 cycles: card → microservice → card; connection → microservice → connection.
+  - Non-exposed types (sub-packages of another module): connection → common 77, ingestion → common 41,
+    canvas → ingestion 39, card → common 15, scenario → common 14, card → ingestion 13,
+    microservice → common 12, canvas → connection (`dto`) 8, scenario → ingestion 6, note → common 4,
+    layout → common 1, workspace → common 1.
+  - Not reported because the repositories live in root packages (so they count as exposed): canvas and
+    layout reading other modules' repositories. These are removed by T021–T024 and then blocked by the
+    hexagonal moves (repositories become internal adapters).
 - After:

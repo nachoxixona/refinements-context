@@ -1,6 +1,6 @@
 package com.refinements.visualizer.connection;
 
-import com.refinements.visualizer.common.errors.BadRequestException;
+import com.refinements.visualizer.shared.errors.BadRequestException;
 import java.util.UUID;
 
 /**

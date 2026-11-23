@@ -1,6 +1,6 @@
 package com.refinements.visualizer.layout;
 
-import com.refinements.visualizer.common.XYPosition;
+import com.refinements.visualizer.shared.XYPosition;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.refinements.visualizer.scenario.model;
 
-import com.refinements.visualizer.ingestion.model.HttpMethod;
+import com.refinements.visualizer.card.model.HttpMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

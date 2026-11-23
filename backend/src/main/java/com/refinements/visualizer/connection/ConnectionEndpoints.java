@@ -1,6 +1,6 @@
 package com.refinements.visualizer.connection;
 
-import com.refinements.visualizer.ingestion.SpecKeys;
+import com.refinements.visualizer.card.model.SpecKeys;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;

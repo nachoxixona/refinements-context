@@ -1,7 +1,7 @@
 package com.refinements.visualizer.microservice;
 
-import com.refinements.visualizer.common.errors.BadRequestException;
-import com.refinements.visualizer.connection.Names;
+import com.refinements.visualizer.shared.Names;
+import com.refinements.visualizer.shared.errors.BadRequestException;
 import java.net.URI;
 import java.net.URISyntaxException;
 

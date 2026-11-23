@@ -1,11 +1,9 @@
 package com.refinements.visualizer.scenario;
 
 import com.refinements.visualizer.canvas.BaselineIndex;
-import com.refinements.visualizer.common.errors.BadRequestException;
+import com.refinements.visualizer.card.model.SpecKeys;
 import com.refinements.visualizer.connection.ConnectionEndpoints;
 import com.refinements.visualizer.connection.ConnectionKey;
-import com.refinements.visualizer.connection.Names;
-import com.refinements.visualizer.ingestion.SpecKeys;
 import com.refinements.visualizer.scenario.dto.Orphan;
 import com.refinements.visualizer.scenario.model.AddedEndpoint;
 import com.refinements.visualizer.scenario.model.AddedField;
@@ -16,6 +14,8 @@ import com.refinements.visualizer.scenario.model.ProposedEndpoint;
 import com.refinements.visualizer.scenario.model.ProposedLink;
 import com.refinements.visualizer.scenario.model.ProposedMicroservice;
 import com.refinements.visualizer.scenario.model.ScenarioContent;
+import com.refinements.visualizer.shared.Names;
+import com.refinements.visualizer.shared.errors.BadRequestException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

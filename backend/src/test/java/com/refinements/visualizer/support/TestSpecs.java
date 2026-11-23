@@ -1,6 +1,6 @@
 package com.refinements.visualizer.support;
 
-import com.refinements.visualizer.common.VisualizerProperties;
+import com.refinements.visualizer.shared.VisualizerProperties;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,6 +1,6 @@
 package com.refinements.visualizer.microservice;
 
-import com.refinements.visualizer.connection.Names;
+import com.refinements.visualizer.shared.Names;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

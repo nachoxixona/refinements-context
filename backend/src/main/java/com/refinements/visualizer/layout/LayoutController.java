@@ -1,10 +1,10 @@
 package com.refinements.visualizer.layout;
 
 import com.refinements.visualizer.card.SpecCardRepository;
-import com.refinements.visualizer.common.XYPosition;
-import com.refinements.visualizer.common.errors.StaleVersionException;
 import com.refinements.visualizer.microservice.Microservice;
 import com.refinements.visualizer.microservice.MicroserviceRepository;
+import com.refinements.visualizer.shared.XYPosition;
+import com.refinements.visualizer.shared.errors.StaleVersionException;
 import jakarta.validation.Valid;
 import java.time.Clock;
 import java.util.HashSet;

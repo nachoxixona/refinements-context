@@ -1,6 +1,6 @@
 package com.refinements.visualizer.layout;
 
-import com.refinements.visualizer.common.XYPosition;
+import com.refinements.visualizer.shared.XYPosition;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -1,9 +1,9 @@
 package com.refinements.visualizer.connection.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.refinements.visualizer.common.PatchBody;
-import com.refinements.visualizer.common.errors.BadRequestException;
 import com.refinements.visualizer.connection.ConnectionKind;
+import com.refinements.visualizer.shared.PatchBody;
+import com.refinements.visualizer.shared.errors.BadRequestException;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /** Partial update (contracts/openapi.yaml ConnectionPatch): absent leaves a property unchanged, null clears it. */

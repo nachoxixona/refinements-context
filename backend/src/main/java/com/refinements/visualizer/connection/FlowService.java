@@ -1,11 +1,12 @@
 package com.refinements.visualizer.connection;
 
-import com.refinements.visualizer.common.errors.BadRequestException;
-import com.refinements.visualizer.common.errors.ConflictException;
-import com.refinements.visualizer.common.errors.NotFoundException;
 import com.refinements.visualizer.connection.dto.FlowDto;
 import com.refinements.visualizer.connection.dto.FlowMutation;
 import com.refinements.visualizer.connection.dto.FlowPatch;
+import com.refinements.visualizer.shared.Names;
+import com.refinements.visualizer.shared.errors.BadRequestException;
+import com.refinements.visualizer.shared.errors.ConflictException;
+import com.refinements.visualizer.shared.errors.NotFoundException;
 import com.refinements.visualizer.workspace.WorkspaceRevision;
 import java.time.Clock;
 import java.util.Optional;

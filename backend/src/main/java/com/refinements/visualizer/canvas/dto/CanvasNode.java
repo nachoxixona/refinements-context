@@ -1,6 +1,6 @@
 package com.refinements.visualizer.canvas.dto;
 
-import com.refinements.visualizer.common.XYPosition;
+import com.refinements.visualizer.shared.XYPosition;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**

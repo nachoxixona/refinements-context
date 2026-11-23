@@ -1,7 +1,7 @@
 package com.refinements.visualizer.microservice.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.refinements.visualizer.common.PatchBody;
+import com.refinements.visualizer.shared.PatchBody;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
