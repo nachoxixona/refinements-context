@@ -1,5 +1,6 @@
-package com.refinements.visualizer.layout;
+package com.refinements.visualizer.layout.adapter.in.web;
 
+import com.refinements.visualizer.layout.application.port.in.LayoutUseCases;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,14 +14,15 @@ public class LayoutController {
 
     public record LayoutVersion(int version) {}
 
-    private final LayoutService layouts;
+    private final LayoutUseCases layouts;
 
-    public LayoutController(LayoutService layouts) {
+    LayoutController(LayoutUseCases layouts) {
         this.layouts = layouts;
     }
 
     @PutMapping
     public LayoutVersion save(@Valid @RequestBody LayoutUpdate update) {
-        return new LayoutVersion(layouts.save(update));
+        return new LayoutVersion(layouts.save(
+                new LayoutUseCases.SaveLayout(update.version(), update.positions(), update.collapsedCards())));
     }
 }

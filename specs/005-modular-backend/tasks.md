@@ -159,20 +159,20 @@ inbound port; plain domain + `*Entity`/`*Mapper` in every module; root package f
 
 ### workspace, layout
 
-- [ ] T036 [P] [US2] Restructure `B/workspace/` (template rules; plain `domain/WorkspaceState` + `WorkspaceStateEntity`, data-model.md "Small modules"):
+- [X] T036 [P] [US2] Restructure `B/workspace/` (template rules; plain `domain/WorkspaceState` + `WorkspaceStateEntity`, data-model.md "Small modules"):
   - `domain/WorkspaceState.java`
   - `application/port/out/WorkspaceStateStore.java` (`find`, `lockSingleton`)
   - `adapter/out/persistence/` (repository and adapter)
 
   `WorkspaceRevision` stays at the root as the API and keeps `Propagation.MANDATORY` on `bump()` and `check()` (R9). `WorkspaceState.increment()` becomes `public` (visibility rule). Update `T/it/*` imports of `WorkspaceRevision` if needed. The stale-revision guard is `ConnectionsDocumentIT` (stale `baseRevision` → 409); if no test there covers it, add one before this change.
-- [ ] T037 [P] [US2] Restructure `B/layout/` (template rules; plain `domain/BaselineLayout` + `BaselineLayoutEntity`, data-model.md "Small modules"):
+- [X] T037 [P] [US2] Restructure `B/layout/` (template rules; plain `domain/BaselineLayout` + `BaselineLayoutEntity`, data-model.md "Small modules"):
   - `domain/BaselineLayout.java` (keeps its `version` field)
   - `application/LayoutService.java`, `port/in/SaveLayout.java`, `port/out/LayoutStore.java`
   - `adapter/in/web/LayoutController.java` and `LayoutUpdate`
   - `adapter/out/persistence/`
 
-  Cross-module reads go through `port/out/MicroserviceIds` and `port/out/CardIds`, whose adapters in `adapter/out/` call `MicroserviceApi` and `SpecCardApi`. Update `T/it/LayoutAndCanvasIT.java` imports of `BaselineLayout`/`BaselineLayoutRepository` to the new packages.
-- [ ] T038 🔖 [US2] Commit "005: workspace and layout — ports and adapters".
+  Cross-module reads go through one port, `port/out/LayoutTargets` (microservice → card links, card ids), whose adapter in `adapter/out/modules/` calls `MicroserviceApi` and `SpecCardApi`. Update `T/it/LayoutAndCanvasIT.java` imports of `BaselineLayout`/`BaselineLayoutRepository` to the new packages.
+- [X] T038 🔖 [US2] Commit "005: workspace and layout — ports and adapters".
 
 ### card (domain split)
 

@@ -1,4 +1,4 @@
-package com.refinements.visualizer.layout;
+package com.refinements.visualizer.layout.adapter.in.web;
 
 import com.refinements.visualizer.shared.XYPosition;
 import jakarta.validation.Valid;
