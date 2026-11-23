@@ -187,26 +187,26 @@ inbound port; plain domain + `*Entity`/`*Mapper` in every module; root package f
   - `B/card/application/SpecCardService.java` implements `port/in` (`ImportCard`, `SyncCard`, `DeleteCard`, `ListCards`) and `SpecCardApi`.
   - It uses `port/out/SpecCardStore`, `port/out/SpecSource` (adapter `adapter/out/fetch/HttpSpecFetcher`) and `port/out/SpecParserPort` (adapter `adapter/out/parser/SwaggerSpecParser`, which wraps parse and flatten).
   - The controller and request DTOs go to `adapter/in/web/`, with DTO names unchanged.
-- [ ] T041 [US2] *(Moved into the microservice step.)* `CardLinkAdapter` already sits in `B/microservice/adapter/out/card/` (placed there in T014). The `CardCatalogAdapter` for microservice's `port/out/CardCatalog` is created together with that port in T045.
+- [X] T041 [US2] *(Moved into the microservice step.)* `CardLinkAdapter` already sits in `B/microservice/adapter/out/card/` (placed there in T014). The `CardCatalogAdapter` for microservice's `port/out/CardCatalog` is created together with that port in T045.
 - [X] T042 [P] [US2] Add `T/card/domain/SpecCardDomainTest.java` (title, sync status, unchanged rule) and `T/card/application/SpecCardUseCasesTest.java` (use cases with in-memory ports). It covers `applyParsed`, `markSynced`/`markFailed` state and the import duplicate rules through `SpecCardService` with in-memory fakes of `SpecCardStore`, `SpecSource`, `SpecParserPort` and `CardLinkPort`. No Spring context (SC-005).
 - [X] T043 🔖 [US2] Commit "005: card module — domain split, ports and adapters".
 
 ### microservice (domain split)
 
-- [ ] T044 [US2] Split microservice into domain and persistence (data-model.md microservice):
+- [X] T044 [US2] Split microservice into domain and persistence (data-model.md microservice):
   - Create the plain `B/microservice/domain/Microservice.java` with `rename`, `describe`, `own` and `link`, and move `Ownership` validation and the name and description checks with `shared.Names` into the domain.
   - Add `adapter/out/persistence/MicroserviceEntity.java`, `MicroserviceJpaRepository` and `MicroserviceMapper`.
   - `MicroserviceStoreAdapter` exposes `save`, `saveAndFlush`, `delete`, `findById`, `findByNameNormalized`, `findBySpecCardId` and `findAllOrdered`.
   - Widen package-private members only inside internal packages (visibility rule).
   - Update `T/it/*` setup that uses `Microservice`/`MicroserviceRepository` to `MicroserviceEntity`/`MicroserviceJpaRepository`, or to `MicroserviceApi` (assertions unchanged).
-- [ ] T045 [US2] Restructure microservice's application and adapter layers:
+- [X] T045 [US2] Restructure microservice's application and adapter layers:
   - `B/microservice/application/MicroserviceService.java` implements `port/in` (`CreateMicroservice`, `UpdateMicroservice`, `DeleteMicroservice`, `LinkCard`, `UnlinkCard`) and `MicroserviceApi`.
   - Its outbound ports are `port/out/MicroserviceStore`, `CardCatalog`, `Revision` (adapter to `WorkspaceRevision`) and `spi/ConnectionEndsPort`.
   - The controller and DTOs go to `adapter/in/web/`.
   - Update `CardLinkAdapter` to use `MicroserviceStore`.
   - Keep the ordering table in data-model.md for delete and rename.
-- [ ] T046 [P] [US2] Add `T/microservice/domain/MicroserviceDomainTest.java`. It covers the name rules, duplicate names, ownership validation, and the delete order (detach before delete, then bump), checked with in-memory fakes of `MicroserviceStore`, `ConnectionEndsPort`, `CardCatalog` and `Revision`.
-- [ ] T047 🔖 [US2] Commit "005: microservice module — domain split, ports and adapters".
+- [X] T046 [P] [US2] Add `T/microservice/domain/MicroserviceDomainTest.java`. It covers the name rules, duplicate names, ownership validation, and the delete order (detach before delete, then bump), checked with in-memory fakes of `MicroserviceStore`, `ConnectionEndsPort`, `CardCatalog` and `Revision`.
+- [X] T047 🔖 [US2] Commit "005: microservice module — domain split, ports and adapters".
 
 ### connection (domain split, incl. connections document)
 
@@ -219,7 +219,7 @@ inbound port; plain domain + `*Entity`/`*Mapper` in every module; root package f
 - [ ] T049 [US2] Restructure connection's application and adapter layers:
   - `B/connection/application/`: `ConnectionService`, `FlowService` and `ConnectionsDocumentService` implement `port/in` and `ConnectionApi`/`FlowApi`.
   - `port/out/MicroserviceDirectory` has an adapter at `adapter/out/microservice/MicroserviceDirectoryAdapter.java` that calls `MicroserviceApi`.
-  - Move `ConnectionEndsAdapter` → `adapter/out/microservice/` and make it use `ConnectionStore`.
+  - Move `ConnectionEndsAdapter` → `adapter/in/microservice/` (`@PrimaryAdapter`, template rule "SPI implementations are inbound adapters") and make it delegate to a `port/in/ConnectionEnds` implemented by a separate `ConnectionEndsService` that depends only on `ConnectionStore` and `Clock` (no `MicroserviceApi`, to avoid a runtime bean cycle).
   - The controllers (`ConnectionController`, `FlowController`, `ConnectionsDocumentController`), `ConnectionsDocumentApi` and the request DTOs go to `adapter/in/web/`.
 - [ ] T050 [P] [US2] Add the domain tests:
   - Move `ConnectionsDocumentDiffTest` to `T/connection/domain/document/` and `ConnectionsDocumentValidatorTest`, `ConnectionsDocumentWriterTest` and `JsonLocatorTest` to `T/connection/adapter/out/document/`, with unchanged assertions.

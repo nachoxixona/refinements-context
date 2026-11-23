@@ -1,6 +1,7 @@
-package com.refinements.visualizer.microservice.dto;
+package com.refinements.visualizer.microservice.adapter.in.web;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.refinements.visualizer.microservice.application.port.in.MicroserviceUseCases;
 import com.refinements.visualizer.shared.PatchBody;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -36,5 +37,18 @@ public record MicroservicePatch(
                 p.has("team"),
                 p.has("repositoryUrl"),
                 p.has("docsUrl"));
+    }
+
+    MicroserviceUseCases.MicroserviceChanges toChanges() {
+        return new MicroserviceUseCases.MicroserviceChanges(
+                name,
+                description,
+                descriptionPresent,
+                team,
+                teamPresent,
+                repositoryUrl,
+                repositoryUrlPresent,
+                docsUrl,
+                docsUrlPresent);
     }
 }

@@ -1,4 +1,4 @@
-package com.refinements.visualizer.microservice.dto;
+package com.refinements.visualizer.microservice.adapter.in.web;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

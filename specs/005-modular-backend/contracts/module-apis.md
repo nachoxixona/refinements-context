@@ -114,6 +114,13 @@ Template rules (fixed after reviewing the note module, 2026-11-23):
 - **Plain domain in every module** (small ones too): `domain/` has no JPA, Spring or Jackson. Persistence has
   `<Name>Entity` (package-private fields), `<Name>Mapper`, a package-private Spring Data repository and a
   `<Name>StoreAdapter` that copies domain state onto the managed entity (research R7).
+- **SPI implementations are inbound adapters**: when module A implements module B's SPI (for example microservice
+  implements `card.spi.CardLinkPort`), the adapter lives in A's `adapter/in/<b>/` (`@PrimaryAdapter`) and delegates
+  to an inbound port of A. That port is implemented by a **separate, small application service** that depends only
+  on A's store (e.g. `CardLinkService`), never by A's main service: A's main service calls B, and B calls back
+  into A, so sharing one bean makes a runtime bean cycle even though compile-time dependencies are acyclic.
+- **Published rules**: a rule another module must apply identically (e.g. ownership limits used by the connections
+  document reader) is published at the root as a framework-free class (`microservice.OwnershipRules`).
 - **Check**: diff `/v3/api-docs/api` and `GET /api/canvas` against the baseline after every module.
 
 ```text

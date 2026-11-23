@@ -1,4 +1,4 @@
-package com.refinements.visualizer.microservice.dto;
+package com.refinements.visualizer.microservice.adapter.in.web;
 
 import java.util.List;
 import java.util.UUID;

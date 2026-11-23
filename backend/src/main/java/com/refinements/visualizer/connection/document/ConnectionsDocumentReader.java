@@ -397,12 +397,12 @@ public class ConnectionsDocumentReader {
                 return null;
             }
             String clean = Names.clean(v.asText());
-            if (clean.length() > com.refinements.visualizer.microservice.Ownership.MAX_TEAM) {
+            if (clean.length() > com.refinements.visualizer.microservice.OwnershipRules.MAX_TEAM) {
                 error(
                         Kind.TOO_LONG,
                         p,
                         d,
-                        d + " is longer than " + com.refinements.visualizer.microservice.Ownership.MAX_TEAM
+                        d + " is longer than " + com.refinements.visualizer.microservice.OwnershipRules.MAX_TEAM
                                 + " characters");
                 return null;
             }
@@ -417,7 +417,7 @@ public class ConnectionsDocumentReader {
             String p = ptr + "/" + field;
             String d = path + "." + field;
             if (!v.isTextual()
-                    || !com.refinements.visualizer.microservice.Ownership.isValidUrl(
+                    || !com.refinements.visualizer.microservice.OwnershipRules.isValidUrl(
                             v.asText().trim())) {
                 error(Kind.INVALID_URL, p, d, d + " is " + v + "; it must be an http or https URL");
                 return null;

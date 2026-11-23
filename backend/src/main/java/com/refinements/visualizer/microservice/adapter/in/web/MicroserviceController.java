@@ -1,11 +1,7 @@
-package com.refinements.visualizer.microservice;
+package com.refinements.visualizer.microservice.adapter.in.web;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.refinements.visualizer.microservice.dto.LinkCardRequest;
-import com.refinements.visualizer.microservice.dto.MicroserviceDeleted;
-import com.refinements.visualizer.microservice.dto.MicroserviceMutation;
-import com.refinements.visualizer.microservice.dto.MicroservicePatch;
-import com.refinements.visualizer.microservice.dto.MicroserviceWrite;
+import com.refinements.visualizer.microservice.application.port.in.MicroserviceUseCases;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -25,17 +21,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/microservices")
 public class MicroserviceController {
 
-    private final MicroserviceService service;
+    private final MicroserviceUseCases microservices;
 
-    public MicroserviceController(MicroserviceService service) {
-        this.service = service;
+    MicroserviceController(MicroserviceUseCases microservices) {
+        this.microservices = microservices;
     }
 
     @PostMapping
     public ResponseEntity<MicroserviceMutation> create(@Valid @RequestBody MicroserviceWrite write) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.create(
-                        write.name(), write.description(), write.team(), write.repositoryUrl(), write.docsUrl()));
+                .body(MicroserviceMutation.from(microservices.create(new MicroserviceUseCases.NewMicroservice(
+                        write.name(), write.description(), write.team(), write.repositoryUrl(), write.docsUrl()))));
     }
 
     @PatchMapping("/{microserviceId}")
@@ -45,23 +41,25 @@ public class MicroserviceController {
                             content = @Content(schema = @Schema(implementation = MicroservicePatch.class)))
                     @RequestBody
                     JsonNode body) {
-        return service.update(microserviceId, MicroservicePatch.from(body));
+        return MicroserviceMutation.from(microservices.update(
+                microserviceId, MicroservicePatch.from(body).toChanges()));
     }
 
     @DeleteMapping("/{microserviceId}")
     public MicroserviceDeleted delete(@PathVariable UUID microserviceId) {
-        return service.delete(microserviceId);
+        MicroserviceUseCases.Deletion d = microservices.delete(microserviceId);
+        return new MicroserviceDeleted(d.danglingConnectionIds(), d.revision());
     }
 
     @PutMapping("/{microserviceId}/card")
     public ResponseEntity<Void> link(@PathVariable UUID microserviceId, @Valid @RequestBody LinkCardRequest request) {
-        service.link(microserviceId, request.cardId(), request.replaceOrFalse());
+        microservices.link(microserviceId, request.cardId(), request.replaceOrFalse());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{microserviceId}/card")
     public ResponseEntity<Void> unlink(@PathVariable UUID microserviceId) {
-        service.unlink(microserviceId);
+        microservices.unlink(microserviceId);
         return ResponseEntity.noContent().build();
     }
 }

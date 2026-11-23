@@ -1,15 +1,14 @@
-package com.refinements.visualizer.microservice;
+package com.refinements.visualizer.microservice.domain;
 
+import com.refinements.visualizer.microservice.OwnershipRules;
 import com.refinements.visualizer.shared.Names;
 import com.refinements.visualizer.shared.errors.BadRequestException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /** Ownership rules (spec 004 data-model.md §2 Microservice.team, Microservice.repositoryUrl, Microservice.docsUrl). */
 public final class Ownership {
 
-    public static final int MAX_TEAM = 120;
-    public static final int MAX_URL = 2048;
+    public static final int MAX_TEAM = OwnershipRules.MAX_TEAM;
+    public static final int MAX_URL = OwnershipRules.MAX_URL;
 
     private Ownership() {}
 
@@ -41,18 +40,6 @@ public final class Ownership {
     }
 
     public static boolean isValidUrl(String url) {
-        if (url == null || url.length() > MAX_URL) {
-            return false;
-        }
-        try {
-            URI u = new URI(url);
-            String scheme = u.getScheme();
-            return scheme != null
-                    && (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"))
-                    && u.getHost() != null
-                    && !u.getHost().isBlank();
-        } catch (URISyntaxException e) {
-            return false;
-        }
+        return OwnershipRules.isValidUrl(url);
     }
 }

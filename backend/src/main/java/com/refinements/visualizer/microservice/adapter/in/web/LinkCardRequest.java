@@ -1,4 +1,4 @@
-package com.refinements.visualizer.microservice.dto;
+package com.refinements.visualizer.microservice.adapter.in.web;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;

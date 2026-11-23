@@ -11,17 +11,4 @@ public record MicroserviceView(
         UUID specCardId,
         String team,
         String repositoryUrl,
-        String docsUrl) {
-
-    static MicroserviceView from(Microservice m) {
-        return new MicroserviceView(
-                m.getId(),
-                m.getName(),
-                m.getNameNormalized(),
-                m.getDescription(),
-                m.getSpecCardId(),
-                m.getTeam(),
-                m.getRepositoryUrl(),
-                m.getDocsUrl());
-    }
-}
+        String docsUrl) {}

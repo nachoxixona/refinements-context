@@ -6,7 +6,7 @@ import com.refinements.visualizer.canvas.CanvasService;
 import com.refinements.visualizer.canvas.dto.CanvasResponse;
 import com.refinements.visualizer.card.SourceType;
 import com.refinements.visualizer.card.application.port.in.SpecCardUseCases;
-import com.refinements.visualizer.microservice.MicroserviceService;
+import com.refinements.visualizer.microservice.application.port.in.MicroserviceUseCases;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +23,7 @@ class PerformanceSmokeIT extends PostgresIntegrationTest {
     SpecCardUseCases cards;
 
     @Autowired
-    MicroserviceService microservices;
+    MicroserviceUseCases microservices;
 
     @Autowired
     CanvasService canvasService;
@@ -61,7 +61,10 @@ class PerformanceSmokeIT extends PostgresIntegrationTest {
             UUID card = cards.importCard(new SpecCardUseCases.ImportCard(SourceType.PASTE, syntheticSpec(i), null))
                     .card()
                     .id();
-            UUID ms = microservices.create("Service " + i, null).microservice().id();
+            UUID ms = microservices
+                    .create(new MicroserviceUseCases.NewMicroservice("Service " + i, null, null, null, null))
+                    .microservice()
+                    .id();
             microservices.link(ms, card, false);
             ids.add(ms);
         }

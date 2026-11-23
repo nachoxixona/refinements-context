@@ -20,9 +20,9 @@ import com.refinements.visualizer.connection.ConnectionView;
 import com.refinements.visualizer.connection.FlowApi;
 import com.refinements.visualizer.layout.LayoutApi;
 import com.refinements.visualizer.layout.LayoutView;
-import com.refinements.visualizer.microservice.Microservice;
 import com.refinements.visualizer.microservice.MicroserviceApi;
 import com.refinements.visualizer.microservice.MicroserviceView;
+import com.refinements.visualizer.microservice.domain.Microservice;
 import com.refinements.visualizer.note.NoteApi;
 import com.refinements.visualizer.workspace.WorkspaceRevision;
 import java.time.Instant;
@@ -104,9 +104,9 @@ class CanvasServiceTest {
 
     @Test
     void buildsDockedUnlinkedAndCollapsedCardsAndSeparatesDanglingConnections() throws Exception {
-        Microservice orders = new Microservice("Orders", null, NOW);
-        Microservice billing = new Microservice("Billing", null, NOW);
-        Microservice payments = new Microservice("Payments", null, NOW);
+        Microservice orders = Microservice.create("Orders", null, NOW);
+        Microservice billing = Microservice.create("Billing", null, NOW);
+        Microservice payments = Microservice.create("Payments", null, NOW);
         SpecCard docked = card("Orders API");
         SpecCard collapsed = card("Billing API");
         SpecCard loose = card("Loose API");
